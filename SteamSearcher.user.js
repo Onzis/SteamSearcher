@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.1.1
+// @version         3.1.2
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -317,11 +317,11 @@
         const style = document.createElement('style');
         style.id = 'no-ru-styles';
         style.innerHTML = `
-            #no-ru-modal-content { scrollbar-width: thin !important; scrollbar-color: #3d4450 #171a21 !important; scrollbar-gutter: stable !important; }
             #no-ru-modal-content::-webkit-scrollbar { width: 10px !important; }
             #no-ru-modal-content::-webkit-scrollbar-track { background: #171a21 !important; border-radius: 0 0 8px 0 !important; }
             #no-ru-modal-content::-webkit-scrollbar-thumb { background: #3d4450 !important; border-radius: 5px !important; }
             #no-ru-modal-content::-webkit-scrollbar-thumb:hover { background: #66c0f4 !important; }
+            body.no-ru-modal-open { overflow: hidden !important; }
             .no-ru-btn { border: none; color: #c6d4df; width: 38px; height: 38px; border-radius: 6px;
                 background: rgba(255,255,255,0.08); cursor: pointer; transition: all 0.15s;
                 display: flex; align-items: center; justify-content: center; }
@@ -398,9 +398,10 @@
         `;
 
         overlay.addEventListener('wheel', (e) => {
+            e.preventDefault();
             const contentBlock = document.getElementById('no-ru-modal-content');
-            if (contentBlock && !contentBlock.contains(e.target)) {
-                e.preventDefault();
+            if (contentBlock) {
+                contentBlock.scrollTop += e.deltaY;
             }
         }, { passive: false });
 
@@ -475,6 +476,7 @@
         closeBtn.onclick = () => {
             isScanning = false;
             overlay.style.display = 'none';
+            document.body.style.overflow = '';
         };
 
         buttonsDiv.appendChild(stopBtn);
@@ -491,6 +493,7 @@
             display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             grid-auto-rows: max-content; gap: 20px; align-content: start; background: #171a21;
             overscroll-behavior: contain;
+            scrollbar-width: thin; scrollbar-color: #3d4450 #171a21; scrollbar-gutter: stable;
         `;
 
         modal.appendChild(header);
@@ -634,6 +637,7 @@
         const stopBtn = document.getElementById('no-ru-stop-btn');
 
         overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
         stopBtn.innerHTML = ICON.stop;
         stopBtn.title = 'Остановить';
         stopBtn.style.display = 'flex';
@@ -721,6 +725,7 @@
 
         if (isRestart) content.innerHTML = '';
         overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
 
         // Убедиться что кнопка стоп в правильном состоянии
         stopBtn.innerHTML = ICON.stop;
