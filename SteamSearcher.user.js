@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.0.0
+// @version         3.1.0
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -19,7 +19,9 @@
     'use strict';
 
     const DELAY_MS = 500;
-    const ZOG_DELAY_MS = 1000;
+    const ZOG_DELAY_MS = 2500;
+    const ZOG_CLOUDFLARE_RETRY_MS = 8000;
+    const ZOG_MAX_RETRIES = 2;
     const ZOG_CHECK_ENABLED = true;
     let isScanning = false;
     let processedAppIds = new Set();
@@ -33,7 +35,7 @@
         search: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>',
         stop: '<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><rect x="3" y="3" width="12" height="12" rx="2"/></svg>',
         play: '<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><polygon points="4,2 16,9 4,16"/></svg>',
-        restart: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 1,1 4,1"/><path d="M1,1 A8,8 0 1,1 0.5,6"/></svg>',
+        restart: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6"/><path d="M2.5 22v-6h6"/><path d="M2.5 11.5a10 10 0 0 1 18.4-4.5L21.5 8"/><path d="M21.5 12.5a10 10 0 0 1-18.4 4.5L2.5 16"/></svg>',
         close: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="14" y2="14"/><line x1="14" y1="4" x2="4" y2="14"/></svg>',
         check: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>',
         warn: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="2" x2="6" y2="7"/><circle cx="6" cy="9.5" r="0.5" fill="currentColor"/></svg>',
@@ -110,6 +112,54 @@
         return null;
     }
 
+    function isCloudflareResponse(responseText, statusCode) {
+        if (statusCode === 403 || statusCode === 503) return true;
+        if (responseText && (
+            responseText.includes('cf-browser-verification') ||
+            responseText.includes('cf_chl_opt') ||
+            responseText.includes('Just a moment') ||
+            responseText.includes('Checking your browser') ||
+            responseText.includes('Attention Required') ||
+            responseText.includes('Cloudflare')
+        )) return true;
+        return false;
+    }
+
+    async function fetchWithCloudflareRetry(url, retries = ZOG_MAX_RETRIES) {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                const response = await new Promise((resolve, reject) => GM_xmlhttpRequest({
+                    method: 'GET',
+                    url,
+                    headers: { 'Accept': 'text/html,application/xhtml+xml', 'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8' },
+                    onload: resolve,
+                    onerror: reject,
+                    ontimeout: reject
+                }));
+
+                if (isCloudflareResponse(response.responseText, response.status)) {
+                    console.warn(`ZOG: Cloudflare обнаружен (попытка ${attempt + 1}/${retries + 1}) для ${url}`);
+                    if (attempt < retries) {
+                        const waitTime = ZOG_CLOUDFLARE_RETRY_MS * (attempt + 1);
+                        await sleep(waitTime);
+                        continue;
+                    }
+                    return null;
+                }
+
+                return response;
+            } catch (e) {
+                console.error(`ZOG: Ошибка сети (попытка ${attempt + 1}/${retries + 1}) для ${url}:`, e);
+                if (attempt < retries) {
+                    await sleep(ZOG_CLOUDFLARE_RETRY_MS * (attempt + 1));
+                    continue;
+                }
+                return null;
+            }
+        }
+        return null;
+    }
+
     async function findGamesOnZog(gameName) {
         const isRussian = /[а-яё]/i.test(gameName);
         const activeMap = isRussian ? russianAlphabetMap : alphabetMap;
@@ -133,8 +183,12 @@
             if (pageNum === undefined) continue;
             const baseUrl = isNonAlpha ? 'https://www.zoneofgames.ru/games/eng/' : (isRussian ? 'https://www.zoneofgames.ru/games/rus/' : 'https://www.zoneofgames.ru/games/eng/');
             const url = `${baseUrl}${pageNum}/`;
+            const response = await fetchWithCloudflareRetry(url);
+            if (!response) {
+                console.error(`ZOG: Не удалось загрузить страницу '${url}' после повторных попыток`);
+                continue;
+            }
             try {
-                const response = await new Promise((resolve, reject) => GM_xmlhttpRequest({ method: 'GET', url, onload: resolve, onerror: reject }));
                 const doc = new DOMParser().parseFromString(response.responseText, 'text/html');
                 doc.querySelectorAll('td.gameinfoblock a').forEach(link => {
                     const path = link.getAttribute('href');
@@ -146,15 +200,19 @@
                         uniquePaths.add(path);
                     }
                 });
-            } catch (e) { console.error(`Ошибка при загрузке страницы '${url}':`, e); }
+            } catch (e) { console.error(`Ошибка при разборе страницы '${url}':`, e); }
         }
         return allGamesFound;
     }
 
     async function fetchLocalizations(gamePath) {
         const fullUrl = `https://www.zoneofgames.ru${gamePath}`;
+        const response = await fetchWithCloudflareRetry(fullUrl);
+        if (!response) {
+            console.error('ZOG: Не удалось загрузить страницу игры после повторных попыток');
+            return null;
+        }
         try {
-            const response = await new Promise((resolve, reject) => GM_xmlhttpRequest({ method: 'GET', url: fullUrl, onload: resolve, onerror: reject }));
             const doc = new DOMParser().parseFromString(response.responseText, 'text/html');
             const localizations = [];
             const translationLabel = Array.from(doc.querySelectorAll('b')).find(b => b.textContent.trim() === 'Переводы:');
@@ -201,15 +259,15 @@
 
             const allGames = await findGamesOnZog(searchName);
             if (!allGames || allGames.length === 0) {
+                // Не кэшируем not_found — возможно Cloudflare блокировка
                 const result = { status: 'not_found', localizations: [], url: null };
-                localStorage.setItem(cacheKey, JSON.stringify(result));
                 return result;
             }
 
             const matches = findPossibleMatches(searchName, allGames);
             if (matches.length === 0) {
+                // Не кэшируем not_found — возможно Cloudflare блокировка
                 const result = { status: 'not_found', localizations: [], url: null };
-                localStorage.setItem(cacheKey, JSON.stringify(result));
                 return result;
             }
 
@@ -219,6 +277,7 @@
             const locData = await fetchLocalizations(bestMatch.item.path);
 
             if (!locData) {
+                // Не кэшируем error — возможно Cloudflare блокировка
                 return { status: 'error', localizations: [], url: `https://www.zoneofgames.ru${bestMatch.item.path}` };
             }
 
@@ -402,10 +461,10 @@
         restartBtn.id = 'no-ru-restart-btn';
         restartBtn.className = 'no-ru-btn';
         restartBtn.innerHTML = ICON.restart;
-        restartBtn.title = 'Перезапуск';
+        restartBtn.title = 'Перепроверить неудачные';
         restartBtn.onclick = () => {
             isScanning = false;
-            setTimeout(() => startScanning(true), 100);
+            setTimeout(() => retryFailedZogChecks(), 100);
         };
 
         // Кнопка Закрыть
@@ -566,6 +625,81 @@
                 container.appendChild(link);
             }
         });
+    }
+
+    async function retryFailedZogChecks() {
+        const overlay = document.getElementById('no-ru-modal-overlay');
+        const titleText = document.getElementById('no-ru-modal-title');
+        const subtitleText = document.getElementById('no-ru-modal-subtitle');
+        const stopBtn = document.getElementById('no-ru-stop-btn');
+
+        overlay.style.display = 'flex';
+        stopBtn.innerHTML = ICON.stop;
+        stopBtn.title = 'Остановить';
+        stopBtn.style.display = 'flex';
+
+        // Найти все бейджи с неудачными статусами
+        const failedBadges = document.querySelectorAll('.zog-badge.not-found, .zog-badge.no-translations, .zog-badge.error');
+        if (failedBadges.length === 0) {
+            titleText.innerText = 'Нет игр для повторной проверки';
+            subtitleText.innerText = 'Все игры уже проверены. Попробуйте полный перезапуск.';
+            return;
+        }
+
+        isScanning = true;
+        let rechecked = 0;
+        let newFound = 0;
+
+        titleText.innerText = `Повторная проверка ZOG: 0/${failedBadges.length}`;
+        subtitleText.innerText = 'Проверяем игры с ошибками и без русификатора...';
+
+        for (const badge of failedBadges) {
+            if (!isScanning) break;
+
+            const appId = badge.dataset.appId;
+            if (!appId) continue;
+
+            rechecked++;
+
+            // Очистить кэш ZOG для этой игры
+            localStorage.removeItem(`zog_ru_v3_${appId}`);
+
+            // Сбросить бейдж в состояние проверки
+            badge.className = 'zog-badge checking';
+            badge.innerHTML = ICON.loader + ' Проверка ZOG...';
+            badge.onclick = null;
+            badge.style.cursor = 'default';
+
+            // Очистить контейнер локализаций
+            const container = document.querySelector(`.zog-loc-container[data-app-id="${appId}"]`);
+            if (container) {
+                container.innerHTML = '';
+                container.style.display = 'none';
+            }
+
+            // Найти название игры из карточки
+            const card = badge.closest('.no-ru-game-card');
+            const nameEl = card?.querySelector('a div[style*="font-weight"]');
+            const gameTitle = nameEl?.textContent || '';
+
+            titleText.innerText = `Повторная проверка ZOG: ${rechecked}/${failedBadges.length}`;
+            subtitleText.innerText = `Проверяем: ${gameTitle || appId}`;
+
+            const zogResult = await checkZogLocalizer(appId, gameTitle);
+            const oldZogFound = zogFoundCount;
+            updateZogBadge(appId, zogResult);
+            if (zogResult.status === 'found') newFound++;
+
+            titleText.innerText = `Повторная проверка: ${rechecked}/${failedBadges.length} | Новых русификаторов: ${newFound}`;
+
+            await sleep(ZOG_DELAY_MS);
+        }
+
+        isScanning = false;
+        stopBtn.innerHTML = ICON.play;
+        stopBtn.title = 'Продолжить';
+        titleText.innerText = `Повторная проверка завершена. Проверено: ${rechecked} | Новых русификаторов: ${newFound}`;
+        subtitleText.innerText = `Всего с русификатором: ${zogFoundCount}`;
     }
 
     async function startScanning(isRestart = false) {
