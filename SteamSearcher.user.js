@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         2.2.0
+// @version         2.2.1
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -30,6 +30,8 @@
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
     // ===================== УТИЛИТЫ ДЛЯ ZOG =====================
+    // Реализация на основе Ultimate Steam Enhancer (0wn3df1x)
+    // GM_xmlhttpRequest работает из userscript-контекста, обходит Cloudflare и CORS
 
     const alphabetMap = {
         'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5, 'f': 6, 'g': 7, 'h': 8, 'i': 9, 'j': 10,
@@ -475,7 +477,7 @@
             switch (zogResult.status) {
                 case 'found':
                     badge.classList.add('found');
-                    badge.innerHTML = `Русификатор есть${zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : ''}`;
+                    badge.innerHTML = `✅ Русификатор есть${zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : ''}`;
                     if (zogResult.url) {
                         badge.style.cursor = 'pointer';
                         badge.onclick = (e) => { window.open(zogResult.url, '_blank'); };
@@ -484,7 +486,7 @@
                     break;
                 case 'no_translations':
                     badge.classList.add('no-translations');
-                    badge.innerHTML = `Нет русификатора${zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : ''}`;
+                    badge.innerHTML = `⚠️ Нет русификатора${zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : ''}`;
                     if (zogResult.url) {
                         badge.style.cursor = 'pointer';
                         badge.onclick = (e) => { window.open(zogResult.url, '_blank'); };
@@ -492,11 +494,11 @@
                     break;
                 case 'not_found':
                     badge.classList.add('not-found');
-                    badge.textContent = 'Не найдено на ZOG';
+                    badge.textContent = '❓ Не найдено на ZOG';
                     break;
                 case 'error':
                     badge.classList.add('error');
-                    badge.textContent = 'Ошибка загрузки ZOG';
+                    badge.textContent = '❌ Ошибка загрузки ZOG';
                     break;
             }
         });
