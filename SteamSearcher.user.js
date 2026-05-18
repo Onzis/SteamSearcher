@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         1.4
+// @version         1.4.1
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -72,7 +72,7 @@
     function createModalUI() {
         if (document.getElementById('no-ru-modal-overlay')) return;
         
-        injectStyles(); // Добавляем стили скроллбара
+        injectStyles();
 
         const overlay = document.createElement('div');
         overlay.id = 'no-ru-modal-overlay';
@@ -82,6 +82,15 @@
             justify-content: center; align-items: center; font-family: "Motiva Sans", Arial, sans-serif;
             backdrop-filter: blur(4px);
         `;
+
+        // БЛОКИРОВКА СКРОЛЛА: Запрещаем крутить колесиком задний фон Steam
+        overlay.addEventListener('wheel', (e) => {
+            const contentBlock = document.getElementById('no-ru-modal-content');
+            // Если мы крутим колесиком НЕ внутри блока с играми - блокируем действие
+            if (contentBlock && !contentBlock.contains(e.target)) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         const modal = document.createElement('div');
         modal.style.cssText = `
@@ -94,7 +103,7 @@
         header.style.cssText = `
             background: linear-gradient(90deg, #171a21 0%, #1b2838 100%); padding: 15px 20px; display: flex;
             justify-content: space-between; align-items: center; border-bottom: 1px solid #2a475e;
-            flex-shrink: 0; /* Шапка не должна сжиматься */
+            flex-shrink: 0; 
         `;
         
         const titleContainer = document.createElement('div');
@@ -147,11 +156,12 @@
 
         const content = document.createElement('div');
         content.id = 'no-ru-modal-content';
-        // ВАЖНО: grid-auto-rows: max-content не дает карточкам сжиматься, min-height: 0 чинит баг флексбокса
+        // БЛОКИРОВКА СКРОЛЛА: overscroll-behavior: contain не дает скроллу выйти за пределы этого блока
         content.style.cssText = `
             padding: 20px; overflow-y: auto; flex: 1; min-height: 0;
             display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
             grid-auto-rows: max-content; gap: 20px; align-content: start; background: #171a21;
+            overscroll-behavior: contain;
         `;
 
         modal.appendChild(header);
