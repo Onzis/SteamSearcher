@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.1.0
+// @version         3.1.1
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -317,10 +317,11 @@
         const style = document.createElement('style');
         style.id = 'no-ru-styles';
         style.innerHTML = `
-            #no-ru-modal-content::-webkit-scrollbar { width: 10px; }
-            #no-ru-modal-content::-webkit-scrollbar-track { background: #171a21; border-radius: 0 0 8px 0; }
-            #no-ru-modal-content::-webkit-scrollbar-thumb { background: #3d4450; border-radius: 5px; }
-            #no-ru-modal-content::-webkit-scrollbar-thumb:hover { background: #66c0f4; }
+            #no-ru-modal-content { scrollbar-width: thin !important; scrollbar-color: #3d4450 #171a21 !important; scrollbar-gutter: stable !important; }
+            #no-ru-modal-content::-webkit-scrollbar { width: 10px !important; }
+            #no-ru-modal-content::-webkit-scrollbar-track { background: #171a21 !important; border-radius: 0 0 8px 0 !important; }
+            #no-ru-modal-content::-webkit-scrollbar-thumb { background: #3d4450 !important; border-radius: 5px !important; }
+            #no-ru-modal-content::-webkit-scrollbar-thumb:hover { background: #66c0f4 !important; }
             .no-ru-btn { border: none; color: #c6d4df; width: 38px; height: 38px; border-radius: 6px;
                 background: rgba(255,255,255,0.08); cursor: pointer; transition: all 0.15s;
                 display: flex; align-items: center; justify-content: center; }
@@ -448,7 +449,6 @@
                 title.innerText = `Поиск приостановлен. Найдено игр: ${foundCount}`;
                 subtitle.innerText = `С русификатором: ${zogFoundCount}. Нажмите продолжить.`;
             } else {
-                isScanning = true;
                 stopBtn.innerHTML = ICON.stop;
                 stopBtn.title = 'Остановить';
                 title.innerText = `Сканирование... Найдено игр: ${foundCount}`;
@@ -487,7 +487,7 @@
         const content = document.createElement('div');
         content.id = 'no-ru-modal-content';
         content.style.cssText = `
-            padding: 20px; overflow-y: auto; flex: 1; min-height: 0;
+            padding: 20px; overflow-y: scroll; flex: 1; min-height: 0;
             display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             grid-auto-rows: max-content; gap: 20px; align-content: start; background: #171a21;
             overscroll-behavior: contain;
@@ -703,17 +703,14 @@
     }
 
     async function startScanning(isRestart = false) {
-        if (isScanning && !isRestart) return;
-
         if (isRestart) {
-            isScanning = true;
             processedAppIds.clear();
             foundCount = 0;
             errorCount = 0;
             zogFoundCount = 0;
-        } else {
-            isScanning = true;
         }
+
+        isScanning = true;
 
         const overlay = document.getElementById('no-ru-modal-overlay');
         const content = document.getElementById('no-ru-modal-content');
