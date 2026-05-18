@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name            SteamSearcher
-// @description     Собирает игры без RU языка на странице поиска Steam и отображает их в удобной модалке. Проверяет наличие русификаторов на ZoneOfGames.ru.
+// @description     Собирает игры без RU языка на странице поиска Steam и отображает их в удобной модалке. Проверяет наличие русификаторов на ZoneOfGames.ru. Быстрый способ найти все игры без русского языка в вашем регионе и узнать, есть ли для них фанатские переводы.
 // @namespace       https://github.com/Onzis/
-// @author          Onzis
+// @author          Onzi
 // @license         GPL-3.0 license
-// @version         2.0.0
+// @version         2.2.0
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
-// @grant           GM.xmlHttpRequest
+// @grant           GM_xmlhttpRequest
 // @connect         store.steampowered.com
 // @connect         api.steampowered.com
 // @connect         zoneofgames.ru
@@ -19,7 +19,7 @@
     'use strict';
 
     const DELAY_MS = 500;
-    const ZOG_DELAY_MS = 800;
+    const ZOG_DELAY_MS = 1000;
     const ZOG_CHECK_ENABLED = true;
     let isScanning = false;
     let processedAppIds = new Set();
@@ -83,29 +83,11 @@
             .slice(0, 5);
     }
 
-    // Обёртка для GM.xmlHttpRequest — возвращает Promise
-    function gmFetch(url) {
-        return new Promise((resolve, reject) => {
-            GM.xmlHttpRequest({
-                method: 'GET',
-                url: url,
-                onload: resolve,
-                onerror: reject,
-                ontimeout: reject
-            });
-        });
-    }
-
-    // Получить английское название игры через Steam API
+    // Получить английское название игры через Steam API (как в USE)
     async function getEnglishGameName(appId) {
         try {
-            const inputJson = JSON.stringify({
-                ids: [{ appid: parseInt(appId) }],
-                context: { language: "english", country_code: "US" },
-                data_request: { include_basic_info: true }
-            });
-            const url = `https://api.steampowered.com/IStoreBrowseService/GetItems/v1?input_json=${encodeURIComponent(inputJson)}`;
-            const response = await gmFetch(url);
+            const url = `https://api.steampowered.com/IStoreBrowseService/GetItems/v1?input_json=${encodeURIComponent(JSON.stringify({ ids: [{ appid: parseInt(appId) }], context: { language: "english", country_code: "US" }, data_request: { include_basic_info: true } }))}`;
+            const response = await new Promise((resolve, reject) => GM_xmlhttpRequest({ method: "GET", url, onload: resolve, onerror: reject, ontimeout: reject }));
             if (response.status === 200) {
                 const data = JSON.parse(response.responseText);
                 return data?.response?.store_items?.[0]?.name || null;
@@ -116,7 +98,7 @@
         return null;
     }
 
-    // Поиск игр на ZoneOfGames по алфавитному указателю
+    // Поиск игр на ZoneOfGames по алфавитному указателю (как в USE)
     async function findGamesOnZog(gameName) {
         const isRussian = /[а-яё]/i.test(gameName);
         const activeMap = isRussian ? russianAlphabetMap : alphabetMap;
@@ -141,7 +123,7 @@
             const baseUrl = isNonAlpha ? 'https://www.zoneofgames.ru/games/eng/' : (isRussian ? 'https://www.zoneofgames.ru/games/rus/' : 'https://www.zoneofgames.ru/games/eng/');
             const url = `${baseUrl}${pageNum}/`;
             try {
-                const response = await gmFetch(url);
+                const response = await new Promise((resolve, reject) => GM_xmlhttpRequest({ method: 'GET', url, onload: resolve, onerror: reject }));
                 const doc = new DOMParser().parseFromString(response.responseText, 'text/html');
                 doc.querySelectorAll('td.gameinfoblock a').forEach(link => {
                     const path = link.getAttribute('href');
@@ -153,18 +135,16 @@
                         uniquePaths.add(path);
                     }
                 });
-            } catch (e) {
-                console.error(`ZOG: Ошибка загрузки страницы '${url}':`, e);
-            }
+            } catch (e) { console.error(`Ошибка при загрузке страницы '${url}':`, e); }
         }
         return allGamesFound;
     }
 
-    // Получить список русификаторов для конкретной игры на ZOG
+    // Получить список русификаторов для конкретной игры на ZOG (как в USE)
     async function fetchLocalizations(gamePath) {
         const fullUrl = `https://www.zoneofgames.ru${gamePath}`;
         try {
-            const response = await gmFetch(fullUrl);
+            const response = await new Promise((resolve, reject) => GM_xmlhttpRequest({ method: 'GET', url: fullUrl, onload: resolve, onerror: reject }));
             const doc = new DOMParser().parseFromString(response.responseText, 'text/html');
             const localizations = [];
             const translationLabel = Array.from(doc.querySelectorAll('b')).find(b => b.textContent.trim() === 'Переводы:');
@@ -195,20 +175,20 @@
     async function checkZogLocalizer(appId, gameName) {
         if (!ZOG_CHECK_ENABLED) return null;
 
-        const cacheKey = `zog_ru_v1_${appId}`;
+        const cacheKey = `zog_ru_v2_${appId}`;
+        // Удаляем старый кэш v1 если остался
+        localStorage.removeItem(`zog_ru_v1_${appId}`);
+
         const cached = localStorage.getItem(cacheKey);
         if (cached !== null) {
-            try {
-                return JSON.parse(cached);
-            } catch (e) {
-                localStorage.removeItem(cacheKey);
-            }
+            try { return JSON.parse(cached); } catch (e) { localStorage.removeItem(cacheKey); }
         }
 
         try {
-            // Сначала пробуем английское название
             let searchName = await getEnglishGameName(appId);
             if (!searchName) searchName = gameName;
+
+            console.log(`ZOG: Поиск русификатора для "${searchName}" (appId: ${appId})`);
 
             const allGames = await findGamesOnZog(searchName);
             if (!allGames || allGames.length === 0) {
@@ -224,11 +204,16 @@
                 return result;
             }
 
-            // Берём лучшее совпадение и загружаем русификаторы
             const bestMatch = matches[0];
+            console.log(`ZOG: Лучшее совпадение: "${bestMatch.item.title}" (${bestMatch.percentage}%) → ${bestMatch.item.path}`);
+
             const locData = await fetchLocalizations(bestMatch.item.path);
 
-            if (locData && locData.localizations && locData.localizations.length > 0) {
+            if (!locData) {
+                return { status: 'error', localizations: [], url: `https://www.zoneofgames.ru${bestMatch.item.path}` };
+            }
+
+            if (locData.localizations && locData.localizations.length > 0) {
                 const result = {
                     status: 'found',
                     localizations: locData.localizations,
@@ -236,16 +221,18 @@
                     zogTitle: locData.title || bestMatch.item.title,
                     matchPercent: bestMatch.percentage
                 };
+                console.log(`ZOG: Найдено ${locData.localizations.length} русификатор(ов) для "${bestMatch.item.title}"`);
                 localStorage.setItem(cacheKey, JSON.stringify(result));
                 return result;
             } else {
                 const result = {
                     status: 'no_translations',
                     localizations: [],
-                    url: locData ? locData.url : `https://www.zoneofgames.ru${bestMatch.item.path}`,
-                    zogTitle: locData?.title || bestMatch.item.title,
+                    url: locData.url,
+                    zogTitle: locData.title || bestMatch.item.title,
                     matchPercent: bestMatch.percentage
                 };
+                console.log(`ZOG: Русификаторы не найдены для "${bestMatch.item.title}"`);
                 localStorage.setItem(cacheKey, JSON.stringify(result));
                 return result;
             }
@@ -257,7 +244,6 @@
 
     // ===================== ОСНОВНОЙ КОД =====================
 
-    // Инъекция стилей для красивого скроллбара
     function injectStyles() {
         if (document.getElementById('no-ru-styles')) return;
         const style = document.createElement('style');
@@ -267,7 +253,7 @@
             #no-ru-modal-content::-webkit-scrollbar-track { background: #171a21; border-radius: 0 0 8px 0; }
             #no-ru-modal-content::-webkit-scrollbar-thumb { background: #3d4450; border-radius: 5px; }
             #no-ru-modal-content::-webkit-scrollbar-thumb:hover { background: #66c0f4; }
-            .zog-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 7px; border-radius: 3px; margin-top: 6px; font-weight: bold; }
+            .zog-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 7px; border-radius: 3px; margin-top: 6px; font-weight: bold; word-break: break-word; }
             .zog-badge.found { background: rgba(76, 175, 80, 0.2); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.4); }
             .zog-badge.no-translations { background: rgba(255, 152, 0, 0.2); color: #FF9800; border: 1px solid rgba(255, 152, 0, 0.4); }
             .zog-badge.not-found { background: rgba(158, 158, 158, 0.2); color: #9e9e9e; border: 1px solid rgba(158, 158, 158, 0.3); }
@@ -326,7 +312,6 @@
             backdrop-filter: blur(4px);
         `;
 
-        // БЛОКИРОВКА СКРОЛЛА: Запрещаем крутить колесиком задний фон Steam
         overlay.addEventListener('wheel', (e) => {
             const contentBlock = document.getElementById('no-ru-modal-content');
             if (contentBlock && !contentBlock.contains(e.target)) {
@@ -434,49 +419,6 @@
 
         const hqImg = gameData.img.replace('capsule_sm_120', 'capsule_231x87').replace('capsule_184x69', 'capsule_231x87');
 
-        // Ссылка-обёртка для картинки и названия
-        const mainLink = document.createElement('a');
-        mainLink.href = gameData.link;
-        mainLink.target = '_blank';
-        mainLink.style.cssText = 'text-decoration: none; color: inherit;';
-        mainLink.innerHTML = `
-            <img src="${hqImg}" style="width: 100%; aspect-ratio: 16/7; object-fit: cover; border-bottom: 1px solid #171a21; display: block;">
-        `;
-
-        const titleDiv = document.createElement('div');
-        titleDiv.style.cssText = 'font-weight: bold; font-size: 14px; margin-bottom: 8px; line-height: 1.3; color: #c6d4df; padding: 0;';
-        titleDiv.textContent = gameData.title;
-        mainLink.appendChild(titleDiv);
-
-        const infoDiv = document.createElement('div');
-        infoDiv.style.cssText = 'padding: 12px; display: flex; flex-direction: column; flex: 1;';
-
-        infoDiv.appendChild(mainLink);
-
-        // Блок цены
-        const priceDiv = document.createElement('div');
-        priceDiv.style.cssText = 'align-self: flex-start; font-size: 13px; color: #a3cc40; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 3px;';
-        priceDiv.textContent = gameData.price || 'Не указана';
-        infoDiv.appendChild(priceDiv);
-
-        // ZOG-бейдж (изначально "проверяем...")
-        const zogBadge = document.createElement('div');
-        zogBadge.className = 'zog-badge checking';
-        zogBadge.dataset.appId = gameData.appId;
-        zogBadge.textContent = '⏳ Проверка ZOG...';
-        infoDiv.appendChild(zogBadge);
-
-        // Контейнер для списка русификаторов (скрыт изначально)
-        const zogLocContainer = document.createElement('div');
-        zogLocContainer.className = 'zog-loc-container';
-        zogLocContainer.dataset.appId = gameData.appId;
-        zogLocContainer.style.display = 'none';
-        infoDiv.appendChild(zogLocContainer);
-
-        gameItem.appendChild(mainLink.querySelector('img') || document.createElement('span'));
-        // Пересобираем правильно
-        gameItem.innerHTML = '';
-
         // Картинка как ссылка
         const imgLink = document.createElement('a');
         imgLink.href = gameData.link;
@@ -501,15 +443,29 @@
         nameLink.appendChild(nameDiv);
         innerDiv.appendChild(nameLink);
 
+        const priceDiv = document.createElement('div');
+        priceDiv.style.cssText = 'align-self: flex-start; font-size: 13px; color: #a3cc40; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 3px;';
+        priceDiv.textContent = gameData.price || 'Не указана';
         innerDiv.appendChild(priceDiv);
+
+        // ZOG-бейдж
+        const zogBadge = document.createElement('div');
+        zogBadge.className = 'zog-badge checking';
+        zogBadge.dataset.appId = gameData.appId;
+        zogBadge.textContent = '⏳ Проверка ZOG...';
         innerDiv.appendChild(zogBadge);
+
+        // Контейнер для списка русификаторов
+        const zogLocContainer = document.createElement('div');
+        zogLocContainer.className = 'zog-loc-container';
+        zogLocContainer.dataset.appId = gameData.appId;
+        zogLocContainer.style.display = 'none';
         innerDiv.appendChild(zogLocContainer);
 
         gameItem.appendChild(innerDiv);
         content.appendChild(gameItem);
     }
 
-    // Обновить ZOG-бейдж на карточке после получения результата
     function updateZogBadge(appId, zogResult) {
         const badges = document.querySelectorAll(`.zog-badge[data-app-id="${appId}"]`);
         const containers = document.querySelectorAll(`.zog-loc-container[data-app-id="${appId}"]`);
@@ -519,7 +475,7 @@
             switch (zogResult.status) {
                 case 'found':
                     badge.classList.add('found');
-                    badge.innerHTML = `✅ Русификатор есть${zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : ''}`;
+                    badge.innerHTML = `Русификатор есть${zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : ''}`;
                     if (zogResult.url) {
                         badge.style.cursor = 'pointer';
                         badge.onclick = (e) => { window.open(zogResult.url, '_blank'); };
@@ -528,7 +484,7 @@
                     break;
                 case 'no_translations':
                     badge.classList.add('no-translations');
-                    badge.innerHTML = `⚠️ Нет русификатора${zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : ''}`;
+                    badge.innerHTML = `Нет русификатора${zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : ''}`;
                     if (zogResult.url) {
                         badge.style.cursor = 'pointer';
                         badge.onclick = (e) => { window.open(zogResult.url, '_blank'); };
@@ -536,16 +492,15 @@
                     break;
                 case 'not_found':
                     badge.classList.add('not-found');
-                    badge.textContent = '❓ Не найдено на ZOG';
+                    badge.textContent = 'Не найдено на ZOG';
                     break;
                 case 'error':
                     badge.classList.add('error');
-                    badge.textContent = '❌ Ошибка ZOG';
+                    badge.textContent = 'Ошибка загрузки ZOG';
                     break;
             }
         });
 
-        // Показать список русификаторов, если они есть
         containers.forEach(container => {
             if (zogResult.status === 'found' && zogResult.localizations && zogResult.localizations.length > 0) {
                 container.style.display = 'block';
@@ -638,15 +593,14 @@
                     foundCount++;
                     titleText.innerText = `Найдено игр: ${foundCount} | С русификатором: ${zogFoundCount}`;
 
-                    // Асинхронная проверка русификатора на ZOG
+                    // Проверка русификатора на ZOG
                     if (ZOG_CHECK_ENABLED) {
                         subtitleText.innerText = `Проверяем игру ${processedAppIds.size}: русификатор ZOG...`;
                         const zogResult = await checkZogLocalizer(appId, gameTitle);
                         updateZogBadge(appId, zogResult);
                         titleText.innerText = `Найдено игр: ${foundCount} | С русификатором: ${zogFoundCount}`;
 
-                        // Задержка перед следующим запросом к ZOG (если не из кэша)
-                        if (localStorage.getItem(`zog_ru_v1_${appId}`) === null && isScanning) {
+                        if (localStorage.getItem(`zog_ru_v2_${appId}`) === null && isScanning) {
                             await sleep(ZOG_DELAY_MS);
                         }
                     }
