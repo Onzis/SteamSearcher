@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         2.3.0
+// @version         3.0.0
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -29,10 +29,11 @@
 
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-    // SVG иконки
     const ICON = {
-        search: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>',
+        search: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="21" y2="21"/></svg>',
         stop: '<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><rect x="3" y="3" width="12" height="12" rx="2"/></svg>',
+        play: '<svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><polygon points="4,2 16,9 4,16"/></svg>',
+        restart: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1,4 1,1 4,1"/><path d="M1,1 A8,8 0 1,1 0.5,6"/></svg>',
         close: '<svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="14" y2="14"/><line x1="14" y1="4" x2="4" y2="14"/></svg>',
         check: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg>',
         warn: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="2" x2="6" y2="7"/><circle cx="6" cy="9.5" r="0.5" fill="currentColor"/></svg>',
@@ -261,28 +262,26 @@
             #no-ru-modal-content::-webkit-scrollbar-track { background: #171a21; border-radius: 0 0 8px 0; }
             #no-ru-modal-content::-webkit-scrollbar-thumb { background: #3d4450; border-radius: 5px; }
             #no-ru-modal-content::-webkit-scrollbar-thumb:hover { background: #66c0f4; }
-            .no-ru-icon-btn { border: none; color: white; width: 40px; height: 40px; border-radius: 8px;
-                cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-            .no-ru-icon-btn:hover { transform: scale(1.08); }
-            .no-ru-icon-btn:active { transform: scale(0.95); }
-            .no-ru-icon-btn.btn-stop { background: #d95b43; }
-            .no-ru-icon-btn.btn-stop:hover { background: #c0412e; }
-            .no-ru-icon-btn.btn-close { background: #2a475e; }
-            .no-ru-icon-btn.btn-close:hover { background: #3d5a7a; }
-            .no-ru-fab { position: fixed; bottom: 30px; right: 30px; z-index: 9998;
-                width: 56px; height: 56px; background-color: #66c0f4; color: #171a21;
-                border: none; border-radius: 50%; cursor: pointer;
-                box-shadow: 0 4px 14px rgba(0,0,0,0.5); transition: all 0.2s;
+            .no-ru-btn { border: none; color: #c6d4df; width: 38px; height: 38px; border-radius: 6px;
+                background: rgba(255,255,255,0.08); cursor: pointer; transition: all 0.15s;
                 display: flex; align-items: center; justify-content: center; }
-            .no-ru-fab:hover { background-color: #4192c0; transform: scale(1.1); box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+            .no-ru-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+            .no-ru-btn:active { transform: scale(0.92); }
+            .no-ru-fab { position: fixed; bottom: 30px; right: 30px; z-index: 9998;
+                width: 52px; height: 52px; background: rgba(27,40,56,0.92); color: #66c0f4;
+                border: 1px solid rgba(102,192,244,0.25); border-radius: 50%; cursor: pointer;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.5); transition: all 0.15s;
+                display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+            .no-ru-fab:hover { background: rgba(27,40,56,0.98); color: #fff; border-color: rgba(102,192,244,0.5);
+                transform: scale(1.08); box-shadow: 0 6px 22px rgba(0,0,0,0.6); }
             .no-ru-fab:active { transform: scale(0.95); }
             .zog-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 7px; border-radius: 3px; margin-top: 6px; font-weight: bold; word-break: break-word; }
             .zog-badge svg { flex-shrink: 0; }
-            .zog-badge.found { background: rgba(76, 175, 80, 0.2); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.4); }
-            .zog-badge.no-translations { background: rgba(255, 152, 0, 0.2); color: #FF9800; border: 1px solid rgba(255, 152, 0, 0.4); }
-            .zog-badge.not-found { background: rgba(158, 158, 158, 0.2); color: #9e9e9e; border: 1px solid rgba(158, 158, 158, 0.3); }
-            .zog-badge.error { background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); }
-            .zog-badge.checking { background: rgba(102, 192, 244, 0.2); color: #66c0f4; border: 1px solid rgba(102, 192, 244, 0.3); }
+            .zog-badge.found { background: rgba(76, 175, 80, 0.15); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3); }
+            .zog-badge.no-translations { background: rgba(255, 152, 0, 0.15); color: #FF9800; border: 1px solid rgba(255, 152, 0, 0.3); }
+            .zog-badge.not-found { background: rgba(158, 158, 158, 0.15); color: #9e9e9e; border: 1px solid rgba(158, 158, 158, 0.25); }
+            .zog-badge.error { background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.25); }
+            .zog-badge.checking { background: rgba(102, 192, 244, 0.15); color: #66c0f4; border: 1px solid rgba(102, 192, 244, 0.25); }
             .zog-badge.checking svg { animation: spin 1s linear infinite; }
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .zog-loc-list { margin-top: 6px; padding-left: 14px; }
@@ -374,22 +373,44 @@
         titleContainer.appendChild(subtitle);
 
         const buttonsDiv = document.createElement('div');
-        buttonsDiv.style.cssText = 'display: flex; gap: 10px;';
+        buttonsDiv.style.cssText = 'display: flex; gap: 8px;';
 
+        // Кнопка Стоп/Продолжить (переключается)
         const stopBtn = document.createElement('button');
         stopBtn.id = 'no-ru-stop-btn';
-        stopBtn.className = 'no-ru-icon-btn btn-stop';
+        stopBtn.className = 'no-ru-btn';
         stopBtn.innerHTML = ICON.stop;
-        stopBtn.title = 'Остановить поиск';
+        stopBtn.title = 'Остановить';
         stopBtn.onclick = () => {
-            isScanning = false;
-            stopBtn.style.display = 'none';
-            title.innerText = `Поиск остановлен. Найдено игр: ${foundCount}`;
-            subtitle.innerText = `С русификатором: ${zogFoundCount}. Можно прокручивать список.`;
+            if (isScanning) {
+                isScanning = false;
+                stopBtn.innerHTML = ICON.play;
+                stopBtn.title = 'Продолжить';
+                title.innerText = `Поиск приостановлен. Найдено игр: ${foundCount}`;
+                subtitle.innerText = `С русификатором: ${zogFoundCount}. Нажмите продолжить.`;
+            } else {
+                isScanning = true;
+                stopBtn.innerHTML = ICON.stop;
+                stopBtn.title = 'Остановить';
+                title.innerText = `Сканирование... Найдено игр: ${foundCount}`;
+                startScanning();
+            }
         };
 
+        // Кнопка Перезапуск
+        const restartBtn = document.createElement('button');
+        restartBtn.id = 'no-ru-restart-btn';
+        restartBtn.className = 'no-ru-btn';
+        restartBtn.innerHTML = ICON.restart;
+        restartBtn.title = 'Перезапуск';
+        restartBtn.onclick = () => {
+            isScanning = false;
+            setTimeout(() => startScanning(true), 100);
+        };
+
+        // Кнопка Закрыть
         const closeBtn = document.createElement('button');
-        closeBtn.className = 'no-ru-icon-btn btn-close';
+        closeBtn.className = 'no-ru-btn';
         closeBtn.innerHTML = ICON.close;
         closeBtn.title = 'Закрыть';
         closeBtn.onclick = () => {
@@ -398,6 +419,7 @@
         };
 
         buttonsDiv.appendChild(stopBtn);
+        buttonsDiv.appendChild(restartBtn);
         buttonsDiv.appendChild(closeBtn);
 
         header.appendChild(titleContainer);
@@ -468,7 +490,6 @@
         priceDiv.textContent = gameData.price || 'Не указана';
         innerDiv.appendChild(priceDiv);
 
-        // ZOG-бейдж с SVG иконкой
         const zogBadge = document.createElement('div');
         zogBadge.className = 'zog-badge checking';
         zogBadge.dataset.appId = gameData.appId;
@@ -547,24 +568,34 @@
         });
     }
 
-    async function startScanning() {
-        if (isScanning) return;
+    async function startScanning(isRestart = false) {
+        if (isScanning && !isRestart) return;
 
-        isScanning = true;
-        processedAppIds.clear();
-        foundCount = 0;
-        errorCount = 0;
-        zogFoundCount = 0;
+        if (isRestart) {
+            isScanning = true;
+            processedAppIds.clear();
+            foundCount = 0;
+            errorCount = 0;
+            zogFoundCount = 0;
+        } else {
+            isScanning = true;
+        }
 
         const overlay = document.getElementById('no-ru-modal-overlay');
         const content = document.getElementById('no-ru-modal-content');
         const titleText = document.getElementById('no-ru-modal-title');
         const subtitleText = document.getElementById('no-ru-modal-subtitle');
         const stopBtn = document.getElementById('no-ru-stop-btn');
+        const restartBtn = document.getElementById('no-ru-restart-btn');
 
-        content.innerHTML = '';
+        if (isRestart) content.innerHTML = '';
         overlay.style.display = 'flex';
+
+        // Убедиться что кнопка стоп в правильном состоянии
+        stopBtn.innerHTML = ICON.stop;
+        stopBtn.title = 'Остановить';
         stopBtn.style.display = 'flex';
+        restartBtn.style.display = 'flex';
 
         titleText.innerText = 'Сканирование запущено...';
 
@@ -641,7 +672,8 @@
             const newGamesCount = document.querySelectorAll('#search_resultsRows a.search_result_row').length;
             if (newGamesCount === gamesOnPage.length && !foundNewUnprocessedGames) {
                 isScanning = false;
-                stopBtn.style.display = 'none';
+                stopBtn.innerHTML = ICON.play;
+                stopBtn.title = 'Продолжить';
                 titleText.innerText = `Сканирование завершено. Найдено: ${foundCount} | С русификатором: ${zogFoundCount}`;
                 subtitleText.innerText = `Достигнут конец списка Steam. Ошибок: ${errorCount}`;
                 break;
@@ -654,7 +686,7 @@
         button.className = 'no-ru-fab';
         button.title = 'Глобальный поиск (Без RU + ZOG)';
         button.innerHTML = ICON.search;
-        button.onclick = startScanning;
+        button.onclick = () => startScanning(true);
         document.body.appendChild(button);
     }
 
