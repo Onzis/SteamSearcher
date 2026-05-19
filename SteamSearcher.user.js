@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.1.3
+// @version         3.1.4
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -328,7 +328,7 @@
                 display: flex; align-items: center; justify-content: center; }
             .no-ru-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
             .no-ru-btn:active { transform: scale(0.92); }
-            .no-ru-fab { position: fixed; bottom: 30px; right: 30px; z-index: 9998;
+            .no-ru-fab { position: fixed; bottom: 30px; left: 30px; z-index: 9998;
                 width: 52px; height: 52px; background: rgba(27,40,56,0.92); color: #66c0f4;
                 border: 1px solid rgba(102,192,244,0.25); border-radius: 50%; cursor: pointer;
                 box-shadow: 0 4px 16px rgba(0,0,0,0.5); transition: all 0.15s;
@@ -827,7 +827,17 @@
         document.body.appendChild(button);
     }
 
+    function registerHotkeys() {
+        document.addEventListener('keydown', (e) => {
+            if (e.shiftKey && e.key === 'F') {
+                e.preventDefault();
+                startScanning(true);
+            }
+        });
+    }
+
     createModalUI();
     createLaunchButton();
+    registerHotkeys();
 
 })();
