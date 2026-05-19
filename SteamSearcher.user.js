@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.3.0
+// @version         3.4.0
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -30,6 +30,9 @@
     let errorCount = 0;
     let zogFoundCount = 0;
 
+    // Ключ для хранения фильтров в localStorage
+    const FILTERS_STORAGE_KEY = 'steamsearcher_filters';
+
     // Состояние фильтров (true = показывать, false = скрывать)
     const filters = {
         found: true,
@@ -38,6 +41,32 @@
         error: true,
         checking: true
     };
+
+    // Загрузить сохранённые фильтры из localStorage
+    function loadFilters() {
+        try {
+            const saved = localStorage.getItem(FILTERS_STORAGE_KEY);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                Object.keys(filters).forEach(key => {
+                    if (parsed.hasOwnProperty(key) && typeof parsed[key] === 'boolean') {
+                        filters[key] = parsed[key];
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('SteamSearcher: Ошибка загрузки фильтров:', e);
+        }
+    }
+
+    // Сохранить текущие фильтры в localStorage
+    function saveFilters() {
+        try {
+            localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters));
+        } catch (e) {
+            console.warn('SteamSearcher: Ошибка сохранения фильтров:', e);
+        }
+    }
 
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -577,6 +606,7 @@
                 toggle.classList.toggle('on', filters[cfg.key]);
                 dot.classList.toggle('off', !filters[cfg.key]);
                 item.classList.toggle('disabled', !filters[cfg.key]);
+                saveFilters();
                 applyFilters();
             };
 
@@ -881,11 +911,21 @@
             foundCount = 0;
             errorCount = 0;
             zogFoundCount = 0;
-            // Сбросить фильтры при новом сканировании
-            Object.keys(filters).forEach(key => { filters[key] = true; });
-            document.querySelectorAll('.no-ru-filter-toggle').forEach(t => t.classList.add('on'));
-            document.querySelectorAll('.no-ru-filter-dot').forEach(d => d.classList.remove('off'));
-            document.querySelectorAll('.no-ru-filter-item').forEach(i => i.classList.remove('disabled'));
+            // Загрузить сохранённые фильтры вместо сброса
+            loadFilters();
+            // Обновить UI фильтров в соответствии с загруженными значениями
+            document.querySelectorAll('.no-ru-filter-toggle').forEach(t => {
+                const key = t.dataset.filterKey;
+                if (key && filters.hasOwnProperty(key)) t.classList.toggle('on', filters[key]);
+            });
+            document.querySelectorAll('.no-ru-filter-dot').forEach(d => {
+                const key = d.dataset.filterKey;
+                if (key && filters.hasOwnProperty(key)) d.classList.toggle('off', !filters[key]);
+            });
+            document.querySelectorAll('.no-ru-filter-item').forEach(i => {
+                const key = i.dataset.filterKey;
+                if (key && filters.hasOwnProperty(key)) i.classList.toggle('disabled', !filters[key]);
+            });
         }
 
         isScanning = true;
@@ -1031,8 +1071,21 @@
             errorCount = 0;
             zogFoundCount = 0;
 
-            // Сбросить фильтры
-            Object.keys(filters).forEach(key => { filters[key] = true; });
+            // Загрузить сохранённые фильтры
+            loadFilters();
+            // Обновить UI фильтров
+            document.querySelectorAll('.no-ru-filter-toggle').forEach(t => {
+                const key = t.dataset.filterKey;
+                if (key && filters.hasOwnProperty(key)) t.classList.toggle('on', filters[key]);
+            });
+            document.querySelectorAll('.no-ru-filter-dot').forEach(d => {
+                const key = d.dataset.filterKey;
+                if (key && filters.hasOwnProperty(key)) d.classList.toggle('off', !filters[key]);
+            });
+            document.querySelectorAll('.no-ru-filter-item').forEach(i => {
+                const key = i.dataset.filterKey;
+                if (key && filters.hasOwnProperty(key)) i.classList.toggle('disabled', !filters[key]);
+            });
 
             if (!document.getElementById('no-ru-modal-overlay')) {
                 createModalUI();
@@ -1072,6 +1125,7 @@
 
     function init() {
         if (!isSearchPage()) return;
+        loadFilters();
         createModalUI();
         createLaunchButton();
         registerHotkeys();
