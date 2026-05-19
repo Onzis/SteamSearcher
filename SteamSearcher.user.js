@@ -2,7 +2,7 @@
 // @name            SteamSearcher
 // @description     Собирает игры без RU языка на странице поиска Steam и отображает их в удобной модалке. Проверяет наличие русификаторов на ZoneOfGames.ru. Быстрый способ найти все игры без русского языка в вашем регионе и узнать, есть ли для них фанатские переводы.
 // @namespace       https://github.com/Onzis/
-// @author          Onzi
+// @author          Onzis
 // @license         GPL-3.0 license
 // @version         3.5.2
 // @homepageURL     https://github.com/Onzis/SteamSearcher
