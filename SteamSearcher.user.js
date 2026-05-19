@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.4.0
+// @version         3.5.0
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -349,6 +349,63 @@
         }
     }
 
+    // ===================== ОБЗОРЫ STEAM =====================
+
+    async function fetchReviewSummary(appId) {
+        const cacheKey = `review_v1_${appId}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached !== null) {
+            try { return JSON.parse(cached); } catch (e) { localStorage.removeItem(cacheKey); }
+        }
+
+        try {
+            const url = `https://store.steampowered.com/appreviews/${appId}?json=1&num_per_page=0&purchase_type=all&language=all`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            if (data && data.query_summary && data.query_summary.total_reviews > 0) {
+                const result = {
+                    score: data.query_summary.review_score || 0,
+                    desc: data.query_summary.review_score_desc || '',
+                    positive: data.query_summary.total_positive || 0,
+                    negative: data.query_summary.total_negative || 0,
+                    total: data.query_summary.total_reviews || 0
+                };
+                localStorage.setItem(cacheKey, JSON.stringify(result));
+                return result;
+            }
+        } catch (e) {
+            console.error(`Ошибка получения обзоров ${appId}:`, e);
+        }
+        return null;
+    }
+
+    function updateReviewBadge(appId, reviewData) {
+        const badges = document.querySelectorAll(`.review-badge[data-app-id="${appId}"]`);
+        badges.forEach(badge => {
+            if (!reviewData) {
+                badge.innerHTML = 'Нет обзоров';
+                badge.classList.add('no-reviews');
+                return;
+            }
+
+            const pct = reviewData.total > 0 ? Math.round((reviewData.positive / reviewData.total) * 100) : 0;
+            badge.innerHTML = `${reviewData.desc} (${pct}% из ${reviewData.total.toLocaleString()})`;
+
+            // Цвет по оценке
+            const score = reviewData.score;
+            if (score >= 8) badge.classList.add('overwhelmingly-positive');
+            else if (score === 7) badge.classList.add('very-positive');
+            else if (score === 6) badge.classList.add('positive');
+            else if (score === 5) badge.classList.add('mostly-positive');
+            else if (score === 4) badge.classList.add('mixed');
+            else if (score === 3) badge.classList.add('mostly-negative');
+            else if (score === 2) badge.classList.add('negative');
+            else if (score === 1) badge.classList.add('very-negative');
+            else badge.classList.add('mixed');
+        });
+    }
+
     // ===================== ОСНОВНОЙ КОД =====================
 
     function injectStyles() {
@@ -382,6 +439,16 @@
             .zog-badge.error { background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.25); }
             .zog-badge.checking { background: rgba(102, 192, 244, 0.15); color: #66c0f4; border: 1px solid rgba(102, 192, 244, 0.25); }
             .zog-badge.checking svg { animation: spin 1s linear infinite; }
+            .review-badge { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 7px; border-radius: 3px; font-weight: bold; background: rgba(102, 192, 244, 0.1); color: #8f98a0; border: 1px solid rgba(102, 192, 244, 0.15); white-space: nowrap; }
+            .review-badge.overwhelmingly-positive { background: rgba(76, 175, 80, 0.18); color: #4CAF50; border-color: rgba(76, 175, 80, 0.35); }
+            .review-badge.very-positive { background: rgba(102, 187, 106, 0.15); color: #66BB6A; border-color: rgba(102, 187, 106, 0.3); }
+            .review-badge.positive { background: rgba(129, 199, 132, 0.13); color: #81C784; border-color: rgba(129, 199, 132, 0.25); }
+            .review-badge.mostly-positive { background: rgba(165, 214, 167, 0.1); color: #A5D6A7; border-color: rgba(165, 214, 167, 0.2); }
+            .review-badge.mixed { background: rgba(255, 193, 7, 0.13); color: #FFC107; border-color: rgba(255, 193, 7, 0.25); }
+            .review-badge.mostly-negative { background: rgba(255, 152, 0, 0.13); color: #FF9800; border-color: rgba(255, 152, 0, 0.25); }
+            .review-badge.negative { background: rgba(244, 67, 54, 0.13); color: #f44336; border-color: rgba(244, 67, 54, 0.25); }
+            .review-badge.very-negative { background: rgba(211, 47, 47, 0.18); color: #D32F2F; border-color: rgba(211, 47, 47, 0.35); }
+            .review-badge.no-reviews { background: rgba(158, 158, 158, 0.1); color: #9e9e9e; border-color: rgba(158, 158, 158, 0.2); }
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .zog-loc-list { margin-top: 6px; padding-left: 14px; }
             .zog-loc-list li { font-size: 11px; color: #c6d4df; margin-bottom: 3px; }
@@ -677,23 +744,41 @@
         gameItem.appendChild(imgLink);
 
         const innerDiv = document.createElement('div');
-        innerDiv.style.cssText = 'padding: 12px; display: flex; flex-direction: column; flex: 1;';
+        innerDiv.style.cssText = 'padding: 12px; display: flex; flex-direction: column; flex: 1; gap: 8px;';
 
         const nameLink = document.createElement('a');
         nameLink.href = gameData.link;
         nameLink.target = '_blank';
         nameLink.style.cssText = 'text-decoration: none; color: #c6d4df;';
         const nameDiv = document.createElement('div');
-        nameDiv.style.cssText = 'font-weight: bold; font-size: 14px; margin-bottom: 8px; line-height: 1.3;';
+        nameDiv.style.cssText = 'font-weight: bold; font-size: 14px; line-height: 1.3;';
         nameDiv.textContent = gameData.title;
         nameLink.appendChild(nameDiv);
         innerDiv.appendChild(nameLink);
 
-        const priceDiv = document.createElement('div');
-        priceDiv.style.cssText = 'align-self: flex-start; font-size: 13px; color: #a3cc40; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 3px;';
-        priceDiv.textContent = gameData.price || 'Не указана';
-        innerDiv.appendChild(priceDiv);
+        // Строка: цена + обзор
+        const infoRow = document.createElement('div');
+        infoRow.style.cssText = 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
 
+        const priceDiv = document.createElement('div');
+        priceDiv.style.cssText = 'font-size: 13px; color: #a3cc40; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 3px; flex-shrink: 0;';
+        priceDiv.textContent = gameData.price || 'Не указана';
+        infoRow.appendChild(priceDiv);
+
+        const reviewBadge = document.createElement('div');
+        reviewBadge.className = 'review-badge';
+        reviewBadge.dataset.appId = gameData.appId;
+        reviewBadge.innerHTML = 'Загрузка...';
+        infoRow.appendChild(reviewBadge);
+
+        innerDiv.appendChild(infoRow);
+
+        // Разделитель
+        const divider = document.createElement('div');
+        divider.style.cssText = 'height: 1px; background: rgba(255,255,255,0.06); margin: 0;';
+        innerDiv.appendChild(divider);
+
+        // ZOG статус
         const zogBadge = document.createElement('div');
         zogBadge.className = 'zog-badge checking';
         zogBadge.dataset.appId = gameData.appId;
@@ -992,6 +1077,11 @@
 
                     foundCount++;
                     titleText.innerText = `Найдено игр: ${foundCount} | С русификатором: ${zogFoundCount}`;
+
+                    // Получить обзоры Steam
+                    subtitleText.innerText = `Проверяем игру ${processedAppIds.size}: обзоры...`;
+                    const reviewData = await fetchReviewSummary(appId);
+                    updateReviewBadge(appId, reviewData);
 
                     if (ZOG_CHECK_ENABLED) {
                         subtitleText.innerText = `Проверяем игру ${processedAppIds.size}: русификатор ZOG...`;
