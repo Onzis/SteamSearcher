@@ -13,6 +13,7 @@
 // @connect         api.steampowered.com
 // @connect         zoneofgames.ru
 // @match           https://store.steampowered.com/search/*
+// @match           https://store.steampowered.com/search*
 // ==/UserScript==
 
 (function() {
