@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.2.1
+// @version         3.3.0
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -1010,8 +1010,84 @@
         }, true);
     }
 
-    createModalUI();
-    createLaunchButton();
-    registerHotkeys();
+    // ===================== TURBOLINKS / SPA НАВИГАЦИЯ =====================
+
+    let currentUrl = location.href;
+
+    function isSearchPage() {
+        return /^https:\/\/store\.steampowered\.com\/search/.test(location.href);
+    }
+
+    function handleNavigation() {
+        if (location.href === currentUrl) return;
+        const wasSearchPage = isSearchPage.call(null, currentUrl);
+        currentUrl = location.href;
+
+        if (isSearchPage()) {
+            // На странице поиска — убедиться что UI на месте
+            isScanning = false;
+            processedAppIds.clear();
+            foundCount = 0;
+            errorCount = 0;
+            zogFoundCount = 0;
+
+            // Сбросить фильтры
+            Object.keys(filters).forEach(key => { filters[key] = true; });
+
+            if (!document.getElementById('no-ru-modal-overlay')) {
+                createModalUI();
+            }
+            if (!document.querySelector('.no-ru-fab')) {
+                createLaunchButton();
+            }
+        } else {
+            // Ушли со страницы поиска — убрать FAB
+            const fab = document.querySelector('.no-ru-fab');
+            if (fab) fab.remove();
+        }
+    }
+
+    function patchHistoryMethod(method) {
+        const original = history[method];
+        history[method] = function() {
+            original.apply(this, arguments);
+            handleNavigation();
+        };
+    }
+
+    patchHistoryMethod('pushState');
+    patchHistoryMethod('replaceState');
+    window.addEventListener('popstate', handleNavigation);
+
+    // Fallback: отслеживание навигации через MutationObserver на контейнере поиска
+    function watchForSpaNavigation() {
+        const checkInterval = setInterval(() => {
+            if (location.href !== currentUrl) {
+                handleNavigation();
+            }
+        }, 1000);
+    }
+
+    // ===================== ИНИЦИАЛИЗАЦИЯ =====================
+
+    function init() {
+        if (!isSearchPage()) return;
+        createModalUI();
+        createLaunchButton();
+        registerHotkeys();
+        watchForSpaNavigation();
+    }
+
+    // Turbolinks-совместимая инициализация
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // На случай если Turbolinks/Turbo подменяет body
+    document.addEventListener('turbolinks:load', init);
+    document.addEventListener('turbo:load', init);
+    document.addEventListener('pjax:end', init);
 
 })();
