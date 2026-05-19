@@ -1,6 +1,6 @@
 # SteamSearcher
 [![Установить](https://img.shields.io/badge/Установить-Tampermonkey-00ad5f?style=flat-square&logo=tampermonkey)](https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js)
-[![Версия](https://img.shields.io/badge/версия-3.5.1-blue?style=flat-square)](https://github.com/Onzis/SteamSearcher)
+[![Версия](https://img.shields.io/badge/версия-3.5.2-blue?style=flat-square)](https://github.com/Onzis/SteamSearcher)
 
 Userscript для поиска игр без русского языка на странице поиска Steam с автоматической проверкой наличия фанатских русификаторов на [ZoneOfGames.ru](https://www.zoneofgames.ru).
 
