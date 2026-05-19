@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.1.2
+// @version         3.1.3
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
