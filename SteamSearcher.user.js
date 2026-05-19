@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.5.0
+// @version         3.5.1
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -537,7 +537,7 @@
             if (contentBlock) {
                 contentBlock.scrollTop += e.deltaY;
             }
-        }, { passive: true });
+        }, { passive: false });
 
         const modal = document.createElement('div');
         modal.style.cssText = `
