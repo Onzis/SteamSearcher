@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.1.4
+// @version         3.2.1
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -29,6 +29,15 @@
     let foundCount = 0;
     let errorCount = 0;
     let zogFoundCount = 0;
+
+    // Состояние фильтров (true = показывать, false = скрывать)
+    const filters = {
+        found: true,
+        no_translations: true,
+        not_found: true,
+        error: true,
+        checking: true
+    };
 
     const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -349,6 +358,34 @@
             .zog-loc-list li { font-size: 11px; color: #c6d4df; margin-bottom: 3px; }
             .zog-loc-list a { color: #66c0f4; text-decoration: none; }
             .zog-loc-list a:hover { text-decoration: underline; }
+            .no-ru-body-wrapper { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+            .no-ru-sidebar { width: 14%; min-width: 180px; flex-shrink: 0; background: #171a21; border-right: 1px solid #2a475e;
+                display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #3d4450 #171a21; }
+            .no-ru-sidebar-header { padding: 16px 16px 12px; color: #66c0f4; font-size: 14px; font-weight: bold;
+                text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #2a475e; }
+            .no-ru-filter-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer;
+                transition: background 0.15s; user-select: none; }
+            .no-ru-filter-item:hover { background: rgba(255,255,255,0.05); }
+            .no-ru-filter-item.disabled { opacity: 0.4; }
+            .no-ru-filter-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; border: 2px solid; }
+            .no-ru-filter-dot.found { background: rgba(76, 175, 80, 0.6); border-color: #4CAF50; }
+            .no-ru-filter-dot.no-translations { background: rgba(255, 152, 0, 0.6); border-color: #FF9800; }
+            .no-ru-filter-dot.not-found { background: rgba(158, 158, 158, 0.6); border-color: #9e9e9e; }
+            .no-ru-filter-dot.error { background: rgba(244, 67, 54, 0.6); border-color: #f44336; }
+            .no-ru-filter-dot.checking { background: rgba(102, 192, 244, 0.6); border-color: #66c0f4; }
+            .no-ru-filter-dot.off { background: transparent !important; }
+            .no-ru-filter-label { flex: 1; color: #c6d4df; font-size: 12px; line-height: 1.3; }
+            .no-ru-filter-count { color: #8f98a0; font-size: 11px; font-weight: bold; min-width: 20px; text-align: right; }
+            .no-ru-filter-toggle { width: 32px; height: 18px; border-radius: 9px; background: #3d4450; position: relative;
+                transition: background 0.2s; flex-shrink: 0; }
+            .no-ru-filter-toggle.on { background: #4CAF50; }
+            .no-ru-filter-toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
+                border-radius: 50%; background: #fff; transition: transform 0.2s; }
+            .no-ru-filter-toggle.on::after { transform: translateX(14px); }
+            .no-ru-sidebar-divider { height: 1px; background: #2a475e; margin: 8px 16px; }
+            .no-ru-sidebar-stats { padding: 12px 16px; color: #8f98a0; font-size: 11px; line-height: 1.6; }
+            .no-ru-sidebar-stats span { color: #c6d4df; font-weight: bold; }
+            .no-ru-hidden-card { display: none !important; }
         `;
         document.head.appendChild(style);
     }
@@ -404,7 +441,7 @@
             if (contentBlock) {
                 contentBlock.scrollTop += e.deltaY;
             }
-        }, { passive: false });
+        }, { passive: true });
 
         const modal = document.createElement('div');
         modal.style.cssText = `
@@ -487,6 +524,77 @@
         header.appendChild(titleContainer);
         header.appendChild(buttonsDiv);
 
+        // Обёртка: сайдбар + контент
+        const bodyWrapper = document.createElement('div');
+        bodyWrapper.className = 'no-ru-body-wrapper';
+
+        // ===== Сайдбар с фильтрами =====
+        const sidebar = document.createElement('div');
+        sidebar.className = 'no-ru-sidebar';
+
+        const sidebarHeader = document.createElement('div');
+        sidebarHeader.className = 'no-ru-sidebar-header';
+        sidebarHeader.textContent = 'Фильтры';
+        sidebar.appendChild(sidebarHeader);
+
+        const filterConfigs = [
+            { key: 'found', label: 'Русификатор есть', dotClass: 'found' },
+            { key: 'no_translations', label: 'Нет русификатора', dotClass: 'no-translations' },
+            { key: 'not_found', label: 'Не найдено на ZOG', dotClass: 'not-found' },
+            { key: 'error', label: 'Ошибка загрузки', dotClass: 'error' },
+            { key: 'checking', label: 'Проверка...', dotClass: 'checking' }
+        ];
+
+        filterConfigs.forEach(cfg => {
+            const item = document.createElement('div');
+            item.className = 'no-ru-filter-item' + (filters[cfg.key] ? '' : ' disabled');
+            item.dataset.filterKey = cfg.key;
+
+            const dot = document.createElement('div');
+            dot.className = 'no-ru-filter-dot ' + cfg.dotClass + (filters[cfg.key] ? '' : ' off');
+            dot.dataset.filterKey = cfg.key;
+
+            const label = document.createElement('div');
+            label.className = 'no-ru-filter-label';
+            label.textContent = cfg.label;
+
+            const count = document.createElement('div');
+            count.className = 'no-ru-filter-count';
+            count.id = 'filter-count-' + cfg.key;
+            count.textContent = '0';
+
+            const toggle = document.createElement('div');
+            toggle.className = 'no-ru-filter-toggle' + (filters[cfg.key] ? ' on' : '');
+            toggle.dataset.filterKey = cfg.key;
+
+            item.appendChild(dot);
+            item.appendChild(label);
+            item.appendChild(count);
+            item.appendChild(toggle);
+
+            item.onclick = () => {
+                filters[cfg.key] = !filters[cfg.key];
+                toggle.classList.toggle('on', filters[cfg.key]);
+                dot.classList.toggle('off', !filters[cfg.key]);
+                item.classList.toggle('disabled', !filters[cfg.key]);
+                applyFilters();
+            };
+
+            sidebar.appendChild(item);
+        });
+
+        // Разделитель и статистика
+        const divider = document.createElement('div');
+        divider.className = 'no-ru-sidebar-divider';
+        sidebar.appendChild(divider);
+
+        const stats = document.createElement('div');
+        stats.className = 'no-ru-sidebar-stats';
+        stats.id = 'no-ru-sidebar-stats';
+        stats.innerHTML = 'Всего: <span id="stat-total">0</span><br>Показано: <span id="stat-visible">0</span><br>Скрыто: <span id="stat-hidden">0</span>';
+        sidebar.appendChild(stats);
+
+        // ===== Контентная область =====
         const content = document.createElement('div');
         content.id = 'no-ru-modal-content';
         content.style.cssText = `
@@ -497,8 +605,11 @@
             scrollbar-width: thin; scrollbar-color: #3d4450 #171a21; scrollbar-gutter: stable;
         `;
 
+        bodyWrapper.appendChild(sidebar);
+        bodyWrapper.appendChild(content);
+
         modal.appendChild(header);
-        modal.appendChild(content);
+        modal.appendChild(bodyWrapper);
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
     }
@@ -567,6 +678,60 @@
 
         gameItem.appendChild(innerDiv);
         content.appendChild(gameItem);
+
+        // Обновить счётчики фильтров при добавлении новой карточки
+        updateFilterCounts();
+    }
+
+    // ===================== ФИЛЬТРЫ =====================
+
+    function getBadgeStatusKey(badge) {
+        if (badge.classList.contains('found')) return 'found';
+        if (badge.classList.contains('no-translations')) return 'no_translations';
+        if (badge.classList.contains('not-found')) return 'not_found';
+        if (badge.classList.contains('error')) return 'error';
+        if (badge.classList.contains('checking')) return 'checking';
+        return null;
+    }
+
+    function updateFilterCounts() {
+        const counts = { found: 0, no_translations: 0, not_found: 0, error: 0, checking: 0 };
+        const allBadges = document.querySelectorAll('.zog-badge[data-app-id]');
+        allBadges.forEach(badge => {
+            const key = getBadgeStatusKey(badge);
+            if (key && counts.hasOwnProperty(key)) counts[key]++;
+        });
+
+        Object.keys(counts).forEach(key => {
+            const el = document.getElementById('filter-count-' + key);
+            if (el) el.textContent = counts[key];
+        });
+
+        const total = allBadges.length;
+        const visible = document.querySelectorAll('.no-ru-game-card:not(.no-ru-hidden-card)').length;
+        const hidden = total - visible;
+
+        const statTotal = document.getElementById('stat-total');
+        const statVisible = document.getElementById('stat-visible');
+        const statHidden = document.getElementById('stat-hidden');
+        if (statTotal) statTotal.textContent = total;
+        if (statVisible) statVisible.textContent = visible;
+        if (statHidden) statHidden.textContent = hidden;
+    }
+
+    function applyFilters() {
+        const allCards = document.querySelectorAll('.no-ru-game-card');
+        allCards.forEach(card => {
+            const badge = card.querySelector('.zog-badge[data-app-id]');
+            if (!badge) { card.classList.remove('no-ru-hidden-card'); return; }
+            const statusKey = getBadgeStatusKey(badge);
+            if (statusKey && filters.hasOwnProperty(statusKey) && !filters[statusKey]) {
+                card.classList.add('no-ru-hidden-card');
+            } else {
+                card.classList.remove('no-ru-hidden-card');
+            }
+        });
+        updateFilterCounts();
     }
 
     function updateZogBadge(appId, zogResult) {
@@ -629,6 +794,9 @@
                 container.appendChild(link);
             }
         });
+
+        // Применить фильтры и обновить счётчики после изменения бейджа
+        applyFilters();
     }
 
     async function retryFailedZogChecks() {
@@ -713,6 +881,11 @@
             foundCount = 0;
             errorCount = 0;
             zogFoundCount = 0;
+            // Сбросить фильтры при новом сканировании
+            Object.keys(filters).forEach(key => { filters[key] = true; });
+            document.querySelectorAll('.no-ru-filter-toggle').forEach(t => t.classList.add('on'));
+            document.querySelectorAll('.no-ru-filter-dot').forEach(d => d.classList.remove('off'));
+            document.querySelectorAll('.no-ru-filter-item').forEach(i => i.classList.remove('disabled'));
         }
 
         isScanning = true;
@@ -829,11 +1002,12 @@
 
     function registerHotkeys() {
         document.addEventListener('keydown', (e) => {
-            if (e.shiftKey && e.key === 'F') {
+            if (e.shiftKey && (e.key === 'F' || e.key === 'А' || e.key === 'f' || e.key === 'а')) {
                 e.preventDefault();
+                e.stopPropagation();
                 startScanning(true);
             }
-        });
+        }, true);
     }
 
     createModalUI();
