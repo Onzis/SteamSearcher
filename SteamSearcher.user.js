@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzi
 // @license         GPL-3.0 license
-// @version         3.5.1
+// @version         3.5.2
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -440,15 +440,25 @@
             .zog-badge.checking { background: rgba(102, 192, 244, 0.15); color: #66c0f4; border: 1px solid rgba(102, 192, 244, 0.25); }
             .zog-badge.checking svg { animation: spin 1s linear infinite; }
             .review-badge { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 7px; border-radius: 3px; font-weight: bold; background: rgba(102, 192, 244, 0.1); color: #8f98a0; border: 1px solid rgba(102, 192, 244, 0.15); white-space: nowrap; }
-            .review-badge.overwhelmingly-positive { background: rgba(76, 175, 80, 0.18); color: #4CAF50; border-color: rgba(76, 175, 80, 0.35); }
-            .review-badge.very-positive { background: rgba(102, 187, 106, 0.15); color: #66BB6A; border-color: rgba(102, 187, 106, 0.3); }
-            .review-badge.positive { background: rgba(129, 199, 132, 0.13); color: #81C784; border-color: rgba(129, 199, 132, 0.25); }
-            .review-badge.mostly-positive { background: rgba(165, 214, 167, 0.1); color: #A5D6A7; border-color: rgba(165, 214, 167, 0.2); }
-            .review-badge.mixed { background: rgba(255, 193, 7, 0.13); color: #FFC107; border-color: rgba(255, 193, 7, 0.25); }
-            .review-badge.mostly-negative { background: rgba(255, 152, 0, 0.13); color: #FF9800; border-color: rgba(255, 152, 0, 0.25); }
+            .review-badge-overlay { position: absolute; bottom: 6px; left: 6px; font-size: 11px; padding: 4px 9px; border-radius: 3px; font-weight: bold; background: rgba(0, 0, 0, 0.92); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.15); white-space: nowrap; backdrop-filter: blur(6px); text-shadow: 0 1px 3px rgba(0,0,0,1); box-shadow: 0 2px 8px rgba(0,0,0,0.6); z-index: 2; pointer-events: none; letter-spacing: 0.2px; }
+            .review-badge-overlay.overwhelmingly-positive { background: rgba(27, 94, 32, 0.95); color: #fff; border-color: rgba(76, 175, 80, 0.8); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge-overlay.very-positive { background: rgba(46, 125, 50, 0.95); color: #fff; border-color: rgba(102, 187, 106, 0.8); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge-overlay.positive { background: rgba(56, 142, 60, 0.93); color: #fff; border-color: rgba(129, 199, 132, 0.7); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge-overlay.mostly-positive { background: rgba(67, 160, 71, 0.9); color: #fff; border-color: rgba(165, 214, 167, 0.6); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge-overlay.mixed { background: rgba(130, 100, 0, 0.93); color: #fff; border-color: rgba(255, 193, 7, 0.7); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge-overlay.mostly-negative { background: rgba(160, 90, 0, 0.93); color: #fff; border-color: rgba(255, 152, 0, 0.7); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge-overlay.negative { background: rgba(160, 30, 30, 0.93); color: #fff; border-color: rgba(244, 67, 54, 0.7); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge-overlay.very-negative { background: rgba(130, 20, 20, 0.95); color: #fff; border-color: rgba(211, 47, 47, 0.8); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge-overlay.no-reviews { background: rgba(0, 0, 0, 0.85); color: #b0b0b0; border-color: rgba(158, 158, 158, 0.4); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+            .review-badge.overwhelmingly-positive { background: rgb(0 0 0 / 55%); color: #4CAF50; border-color: rgb(76 175 80 / 80%); }
+            .review-badge.very-positive { background: rgb(0 0 0 / 55%); color: #66BB6A; border-color: rgb(102 187 106); }
+            .review-badge.positive { background: rgb(0 0 0 / 55%); color: #81C784; border-color: rgb(129 199 132); }
+            .review-badge.mostly-positive { background: rgb(0 0 0 / 55%); color: #A5D6A7; border-color: rgb(165 214 167 / 94%); }
+            .review-badge.mixed { background: rgb(0 0 0 / 55%); color: #FFC107; border-color: rgb(255 193 7); }
+            .review-badge.mostly-negative { background: rgb(0 0 0 / 55%); color: #FF9800; border-color: rgb(255 152 0); }
             .review-badge.negative { background: rgba(244, 67, 54, 0.13); color: #f44336; border-color: rgba(244, 67, 54, 0.25); }
             .review-badge.very-negative { background: rgba(211, 47, 47, 0.18); color: #D32F2F; border-color: rgba(211, 47, 47, 0.35); }
-            .review-badge.no-reviews { background: rgba(158, 158, 158, 0.1); color: #9e9e9e; border-color: rgba(158, 158, 158, 0.2); }
+            .review-badge.no-reviews { background: rgb(0 0 0 / 55%); color: #9e9e9e; border-color: rgb(158 158 158); }
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .zog-loc-list { margin-top: 6px; padding-left: 14px; }
             .zog-loc-list li { font-size: 11px; color: #c6d4df; margin-bottom: 3px; }
@@ -734,6 +744,10 @@
 
         const hqImg = gameData.img.replace('capsule_sm_120', 'capsule_231x87').replace('capsule_184x69', 'capsule_231x87');
 
+        // Обёртка для обложки с overlay-рейтингом
+        const imgWrapper = document.createElement('div');
+        imgWrapper.style.cssText = 'position: relative; overflow: hidden;';
+
         const imgLink = document.createElement('a');
         imgLink.href = gameData.link;
         imgLink.target = '_blank';
@@ -741,7 +755,16 @@
         img.src = hqImg;
         img.style.cssText = 'width: 100%; aspect-ratio: 16/7; object-fit: cover; border-bottom: 1px solid #171a21; display: block;';
         imgLink.appendChild(img);
-        gameItem.appendChild(imgLink);
+        imgWrapper.appendChild(imgLink);
+
+        // Рейтинг поверх обложки
+        const reviewBadge = document.createElement('div');
+        reviewBadge.className = 'review-badge review-badge-overlay';
+        reviewBadge.dataset.appId = gameData.appId;
+        reviewBadge.innerHTML = 'Загрузка...';
+        imgWrapper.appendChild(reviewBadge);
+
+        gameItem.appendChild(imgWrapper);
 
         const innerDiv = document.createElement('div');
         innerDiv.style.cssText = 'padding: 12px; display: flex; flex-direction: column; flex: 1; gap: 8px;';
@@ -756,22 +779,11 @@
         nameLink.appendChild(nameDiv);
         innerDiv.appendChild(nameLink);
 
-        // Строка: цена + обзор
-        const infoRow = document.createElement('div');
-        infoRow.style.cssText = 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
-
+        // Цена
         const priceDiv = document.createElement('div');
-        priceDiv.style.cssText = 'font-size: 13px; color: #a3cc40; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 3px; flex-shrink: 0;';
+        priceDiv.style.cssText = 'font-size: 13px; color: #a3cc40; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 3px; flex-shrink: 0; display: inline-block;';
         priceDiv.textContent = gameData.price || 'Не указана';
-        infoRow.appendChild(priceDiv);
-
-        const reviewBadge = document.createElement('div');
-        reviewBadge.className = 'review-badge';
-        reviewBadge.dataset.appId = gameData.appId;
-        reviewBadge.innerHTML = 'Загрузка...';
-        infoRow.appendChild(reviewBadge);
-
-        innerDiv.appendChild(infoRow);
+        innerDiv.appendChild(priceDiv);
 
         // Разделитель
         const divider = document.createElement('div');
