@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.5.2
+// @version         3.5.3
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -414,7 +414,7 @@
         style.id = 'no-ru-styles';
         style.innerHTML = `
             #no-ru-modal-content::-webkit-scrollbar { width: 10px !important; }
-            #no-ru-modal-content::-webkit-scrollbar-track { background: #171a21 !important; border-radius: 0 0 8px 0 !important; }
+            #no-ru-modal-content::-webkit-scrollbar-track { background: #141a22 !important; border-radius: 0 0 8px 0 !important; }
             #no-ru-modal-content::-webkit-scrollbar-thumb { background: #3d4450 !important; border-radius: 5px !important; }
             #no-ru-modal-content::-webkit-scrollbar-thumb:hover { background: #66c0f4 !important; }
             body.no-ru-modal-open { overflow: hidden !important; }
@@ -431,16 +431,17 @@
             .no-ru-fab:hover { background: rgba(27,40,56,0.98); color: #fff; border-color: rgba(102,192,244,0.5);
                 transform: scale(1.08); box-shadow: 0 6px 22px rgba(0,0,0,0.6); }
             .no-ru-fab:active { transform: scale(0.95); }
-            .zog-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 3px 7px; border-radius: 3px; margin-top: 6px; font-weight: bold; word-break: break-word; }
+            .zog-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px 10px; border-radius: 6px; margin-top: 8px; font-weight: 600; word-break: break-word; letter-spacing: 0.2px; transition: all 0.2s; }
+            .zog-badge:hover { filter: brightness(1.15); }
             .zog-badge svg { flex-shrink: 0; }
-            .zog-badge.found { background: rgba(76, 175, 80, 0.15); color: #4CAF50; border: 1px solid rgba(76, 175, 80, 0.3); }
-            .zog-badge.no-translations { background: rgba(255, 152, 0, 0.15); color: #FF9800; border: 1px solid rgba(255, 152, 0, 0.3); }
-            .zog-badge.not-found { background: rgba(158, 158, 158, 0.15); color: #9e9e9e; border: 1px solid rgba(158, 158, 158, 0.25); }
-            .zog-badge.error { background: rgba(244, 67, 54, 0.15); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.25); }
-            .zog-badge.checking { background: rgba(102, 192, 244, 0.15); color: #66c0f4; border: 1px solid rgba(102, 192, 244, 0.25); }
+            .zog-badge.found { background: rgba(76, 175, 80, 0.2); color: #66d96a; border: 1px solid rgba(76, 175, 80, 0.4); box-shadow: 0 0 8px rgba(76, 175, 80, 0.1); }
+            .zog-badge.no-translations { background: rgba(255, 152, 0, 0.2); color: #ffb74d; border: 1px solid rgba(255, 152, 0, 0.4); box-shadow: 0 0 8px rgba(255, 152, 0, 0.1); }
+            .zog-badge.not-found { background: rgba(158, 158, 158, 0.15); color: #b0b0b0; border: 1px solid rgba(158, 158, 158, 0.3); }
+            .zog-badge.error { background: rgba(244, 67, 54, 0.2); color: #ef5350; border: 1px solid rgba(244, 67, 54, 0.4); box-shadow: 0 0 8px rgba(244, 67, 54, 0.1); }
+            .zog-badge.checking { background: rgba(102, 192, 244, 0.15); color: #66c0f4; border: 1px solid rgba(102, 192, 244, 0.3); }
             .zog-badge.checking svg { animation: spin 1s linear infinite; }
             .review-badge { display: inline-flex; align-items: center; font-size: 11px; padding: 3px 7px; border-radius: 3px; font-weight: bold; background: rgba(102, 192, 244, 0.1); color: #8f98a0; border: 1px solid rgba(102, 192, 244, 0.15); white-space: nowrap; }
-            .review-badge-overlay { position: absolute; bottom: 6px; left: 6px; font-size: 11px; padding: 4px 9px; border-radius: 3px; font-weight: bold; background: rgba(0, 0, 0, 0.92); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.15); white-space: nowrap; backdrop-filter: blur(6px); text-shadow: 0 1px 3px rgba(0,0,0,1); box-shadow: 0 2px 8px rgba(0,0,0,0.6); z-index: 2; pointer-events: none; letter-spacing: 0.2px; }
+            .review-badge-overlay { position: absolute; bottom: 8px; left: 8px; font-size: 11px; padding: 5px 10px; border-radius: 5px; font-weight: bold; background: rgba(0, 0, 0, 0.88); color: #e0e0e0; border: 1px solid rgba(255, 255, 255, 0.12); white-space: nowrap; backdrop-filter: blur(8px); text-shadow: 0 1px 3px rgba(0,0,0,1); box-shadow: 0 2px 12px rgba(0,0,0,0.7); z-index: 2; pointer-events: none; letter-spacing: 0.2px; }
             .review-badge-overlay.overwhelmingly-positive { background: rgba(27, 94, 32, 0.95); color: #fff; border-color: rgba(76, 175, 80, 0.8); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
             .review-badge-overlay.very-positive { background: rgba(46, 125, 50, 0.95); color: #fff; border-color: rgba(102, 187, 106, 0.8); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
             .review-badge-overlay.positive { background: rgba(56, 142, 60, 0.93); color: #fff; border-color: rgba(129, 199, 132, 0.7); text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
@@ -460,10 +461,10 @@
             .review-badge.very-negative { background: rgba(211, 47, 47, 0.18); color: #D32F2F; border-color: rgba(211, 47, 47, 0.35); }
             .review-badge.no-reviews { background: rgb(0 0 0 / 55%); color: #9e9e9e; border-color: rgb(158 158 158); }
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            .zog-loc-list { margin-top: 6px; padding-left: 14px; }
-            .zog-loc-list li { font-size: 11px; color: #c6d4df; margin-bottom: 3px; }
-            .zog-loc-list a { color: #66c0f4; text-decoration: none; }
-            .zog-loc-list a:hover { text-decoration: underline; }
+            .zog-loc-list { margin-top: 8px; padding-left: 16px; }
+            .zog-loc-list li { font-size: 11px; color: #c6d4df; margin-bottom: 4px; line-height: 1.4; }
+            .zog-loc-list a { color: #66c0f4; text-decoration: none; transition: color 0.15s; }
+            .zog-loc-list a:hover { color: #fff; text-decoration: underline; }
             .no-ru-body-wrapper { display: flex; flex: 1; min-height: 0; overflow: hidden; }
             .no-ru-sidebar { width: 14%; min-width: 180px; flex-shrink: 0; background: #171a21; border-right: 1px solid #2a475e;
                 display: flex; flex-direction: column; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #3d4450 #171a21; }
@@ -492,6 +493,21 @@
             .no-ru-sidebar-stats { padding: 12px 16px; color: #8f98a0; font-size: 11px; line-height: 1.6; }
             .no-ru-sidebar-stats span { color: #c6d4df; font-weight: bold; }
             .no-ru-hidden-card { display: none !important; }
+            .no-ru-game-card { display: flex; flex-direction: column; background: linear-gradient(165deg, #1e2d3d 0%, #1a2636 50%, #172232 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; color: #c6d4df; position: relative; }
+            .no-ru-game-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(102,192,244,0.15), transparent); z-index: 1; }
+            .no-ru-game-card:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.45), 0 0 0 1px rgba(102,192,244,0.2), 0 0 20px rgba(102,192,244,0.05); border-color: rgba(102,192,244,0.25); }
+            .no-ru-game-card:hover .no-ru-card-img img { transform: scale(1.03); }
+            .no-ru-card-img { position: relative; overflow: hidden; }
+            .no-ru-card-img::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50px; background: linear-gradient(to top, #1a2636, transparent); z-index: 1; pointer-events: none; }
+            .no-ru-card-img img { width: 100%; aspect-ratio: 16/7; object-fit: cover; display: block; transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+            .no-ru-card-body { padding: 14px 14px 16px; display: flex; flex-direction: column; flex: 1; gap: 8px; }
+            .no-ru-card-title { text-decoration: none; color: #dce6f0; transition: color 0.15s; display: block; }
+            .no-ru-card-title:hover { color: #fff; }
+            .no-ru-card-title-text { font-weight: 700; font-size: 14px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            .no-ru-card-price { font-size: 13px; color: #a4d007; background: rgba(76,175,80,0.1); padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(76,175,80,0.2); display: inline-block; font-weight: 600; letter-spacing: 0.3px; }
+            .no-ru-card-divider { height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent); margin: 2px 0; }
+            .no-ru-card-loc-link { font-size: 11px; color: #66c0f4; text-decoration: none; margin-top: 4px; display: inline-block; transition: color 0.15s; }
+            .no-ru-card-loc-link:hover { color: #fff; }
         `;
         document.head.appendChild(style);
     }
@@ -705,11 +721,11 @@
         const content = document.createElement('div');
         content.id = 'no-ru-modal-content';
         content.style.cssText = `
-            padding: 20px; overflow-y: scroll; flex: 1; min-height: 0;
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            grid-auto-rows: max-content; gap: 20px; align-content: start; background: #171a21;
+            padding: 24px; overflow-y: scroll; flex: 1; min-height: 0;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-auto-rows: max-content; gap: 18px; align-content: start; background: #141a22;
             overscroll-behavior: contain;
-            scrollbar-width: thin; scrollbar-color: #3d4450 #171a21; scrollbar-gutter: stable;
+            scrollbar-width: thin; scrollbar-color: #3d4450 #141a22; scrollbar-gutter: stable;
         `;
 
         bodyWrapper.appendChild(sidebar);
@@ -726,34 +742,19 @@
 
         const gameItem = document.createElement('div');
         gameItem.className = 'no-ru-game-card';
-        gameItem.style.cssText = `
-            display: flex; flex-direction: column; background: #202d39; border: 1px solid #3d4450;
-            border-radius: 4px; transition: transform 0.2s, box-shadow 0.2s;
-            overflow: hidden; color: #c6d4df;
-        `;
-        gameItem.onmouseover = () => {
-            gameItem.style.transform = 'translateY(-5px)';
-            gameItem.style.boxShadow = '0 5px 15px rgba(0,0,0,0.5)';
-            gameItem.style.borderColor = '#66c0f4';
-        };
-        gameItem.onmouseout = () => {
-            gameItem.style.transform = 'translateY(0)';
-            gameItem.style.boxShadow = 'none';
-            gameItem.style.borderColor = '#3d4450';
-        };
 
         const hqImg = gameData.img.replace('capsule_sm_120', 'capsule_231x87').replace('capsule_184x69', 'capsule_231x87');
 
         // Обёртка для обложки с overlay-рейтингом
         const imgWrapper = document.createElement('div');
-        imgWrapper.style.cssText = 'position: relative; overflow: hidden;';
+        imgWrapper.className = 'no-ru-card-img';
 
         const imgLink = document.createElement('a');
         imgLink.href = gameData.link;
         imgLink.target = '_blank';
         const img = document.createElement('img');
         img.src = hqImg;
-        img.style.cssText = 'width: 100%; aspect-ratio: 16/7; object-fit: cover; border-bottom: 1px solid #171a21; display: block;';
+        img.loading = 'lazy';
         imgLink.appendChild(img);
         imgWrapper.appendChild(imgLink);
 
@@ -767,27 +768,27 @@
         gameItem.appendChild(imgWrapper);
 
         const innerDiv = document.createElement('div');
-        innerDiv.style.cssText = 'padding: 12px; display: flex; flex-direction: column; flex: 1; gap: 8px;';
+        innerDiv.className = 'no-ru-card-body';
 
         const nameLink = document.createElement('a');
         nameLink.href = gameData.link;
         nameLink.target = '_blank';
-        nameLink.style.cssText = 'text-decoration: none; color: #c6d4df;';
+        nameLink.className = 'no-ru-card-title';
         const nameDiv = document.createElement('div');
-        nameDiv.style.cssText = 'font-weight: bold; font-size: 14px; line-height: 1.3;';
+        nameDiv.className = 'no-ru-card-title-text';
         nameDiv.textContent = gameData.title;
         nameLink.appendChild(nameDiv);
         innerDiv.appendChild(nameLink);
 
         // Цена
         const priceDiv = document.createElement('div');
-        priceDiv.style.cssText = 'font-size: 13px; color: #a3cc40; background: rgba(0,0,0,0.5); padding: 3px 8px; border-radius: 3px; flex-shrink: 0; display: inline-block;';
+        priceDiv.className = 'no-ru-card-price';
         priceDiv.textContent = gameData.price || 'Не указана';
         innerDiv.appendChild(priceDiv);
 
         // Разделитель
         const divider = document.createElement('div');
-        divider.style.cssText = 'height: 1px; background: rgba(255,255,255,0.06); margin: 0;';
+        divider.className = 'no-ru-card-divider';
         innerDiv.appendChild(divider);
 
         // ZOG статус
@@ -916,7 +917,7 @@
                 const link = document.createElement('a');
                 link.href = zogResult.url;
                 link.target = '_blank';
-                link.style.cssText = 'font-size: 11px; color: #66c0f4; text-decoration: none; margin-top: 4px; display: inline-block;';
+                link.className = 'no-ru-card-loc-link';
                 link.textContent = 'Открыть на ZoneOfGames';
                 container.appendChild(link);
             }
@@ -979,7 +980,7 @@
 
             // Найти название игры из карточки
             const card = badge.closest('.no-ru-game-card');
-            const nameEl = card?.querySelector('a div[style*="font-weight"]');
+            const nameEl = card?.querySelector('.no-ru-card-title-text');
             const gameTitle = nameEl?.textContent || '';
 
             titleText.innerText = `Повторная проверка ZOG: ${rechecked}/${failedBadges.length}`;
