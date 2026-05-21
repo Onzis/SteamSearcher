@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.5.3
+// @version         3.5.4
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -423,14 +423,27 @@
                 display: flex; align-items: center; justify-content: center; }
             .no-ru-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
             .no-ru-btn:active { transform: scale(0.92); }
-            .no-ru-fab { position: fixed; bottom: 30px; left: 30px; z-index: 9998;
-                width: 52px; height: 52px; background: rgba(27,40,56,0.92); color: #66c0f4;
-                border: 1px solid rgba(102,192,244,0.25); border-radius: 50%; cursor: pointer;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.5); transition: all 0.15s;
-                display: flex; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-            .no-ru-fab:hover { background: rgba(27,40,56,0.98); color: #fff; border-color: rgba(102,192,244,0.5);
-                transform: scale(1.08); box-shadow: 0 6px 22px rgba(0,0,0,0.6); }
-            .no-ru-fab:active { transform: scale(0.95); }
+            .ss-fab {
+                position: fixed; bottom: 28px; left: 28px; z-index: 9998;
+                width: 50px; height: 50px; border-radius: 50%; border: none;
+                background: linear-gradient(135deg, #1a2a3e 0%, #0f1923 100%);
+                color: #66c0f4; cursor: pointer;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 0 1px rgba(102,192,244,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+                display: flex; align-items: center; justify-content: center;
+                transition: all 0.2s ease; backdrop-filter: blur(12px);
+            }
+            .ss-fab::before {
+                content: ''; position: absolute; inset: -3px; border-radius: 50%;
+                background: conic-gradient(from 0deg, transparent, rgba(102,192,244,0.3), transparent, transparent);
+                animation: ss-fab-rotate 4s linear infinite; opacity: 0.6; z-index: -1;
+            }
+            .ss-fab:hover {
+                transform: scale(1.1);
+                box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 30px rgba(102,192,244,0.2), 0 0 0 1px rgba(102,192,244,0.5);
+                color: #fff;
+            }
+            .ss-fab:active { transform: scale(0.95); }
+            @keyframes ss-fab-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .zog-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 5px 10px; border-radius: 6px; margin-top: 8px; font-weight: 600; word-break: break-word; letter-spacing: 0.2px; transition: all 0.2s; }
             .zog-badge:hover { filter: brightness(1.15); }
             .zog-badge svg { flex-shrink: 0; }
@@ -1136,8 +1149,8 @@
 
     function createLaunchButton() {
         const button = document.createElement('button');
-        button.className = 'no-ru-fab';
-        button.title = 'Глобальный поиск (Без RU + ZOG)';
+        button.className = 'ss-fab';
+        button.title = 'SteamSearcher (Shift+F)';
         button.innerHTML = ICON.search;
         button.onclick = () => startScanning(true);
         document.body.appendChild(button);
@@ -1193,12 +1206,12 @@
             if (!document.getElementById('no-ru-modal-overlay')) {
                 createModalUI();
             }
-            if (!document.querySelector('.no-ru-fab')) {
+            if (!document.querySelector('.ss-fab')) {
                 createLaunchButton();
             }
         } else {
             // Ушли со страницы поиска — убрать FAB
-            const fab = document.querySelector('.no-ru-fab');
+            const fab = document.querySelector('.ss-fab');
             if (fab) fab.remove();
         }
     }
