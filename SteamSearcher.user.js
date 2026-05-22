@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.5.6
+// @version         3.5.7
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -12,6 +12,7 @@
 // @connect         store.steampowered.com
 // @connect         api.steampowered.com
 // @connect         zoneofgames.ru
+// @connect         protondb.com
 // @match           https://store.steampowered.com/search/*
 // @match           https://store.steampowered.com/search*
 // ==/UserScript==
@@ -354,6 +355,61 @@
         }
     }
 
+    // ===================== PROTONDB =====================
+
+    const PROTONDB_TIERS = {
+        'platinum': { label: 'Платина', color: '#b4c7dc', bg: '#4a5a6e', border: '#7a8fa3' },
+        'gold':     { label: 'Золото',   color: '#ffd700', bg: '#6e5a1a', border: '#a8892a' },
+        'silver':   { label: 'Серебро',  color: '#c0c0c0', bg: '#4a4a4a', border: '#808080' },
+        'bronze':   { label: 'Бронза',   color: '#cd7f32', bg: '#5a3a1a', border: '#8a5a2a' },
+        'borked':   { label: 'Сломано',  color: '#ff4444', bg: '#5a1a1a', border: '#8a2a2a' },
+        'pending':  { label: 'Ожидание', color: '#999999', bg: '#333333', border: '#555555' },
+    };
+
+    async function fetchProtonDBRating(appId) {
+        const cacheKey = `protondb_v1_${appId}`;
+        const cached = localStorage.getItem(cacheKey);
+        if (cached !== null) {
+            try { return JSON.parse(cached); } catch (e) { localStorage.removeItem(cacheKey); }
+        }
+
+        try {
+            const url = `https://www.protondb.com/api/v1/reports/summaries/${appId}.json`;
+            const response = await new Promise((resolve, reject) => GM_xmlhttpRequest({
+                method: 'GET', url, onload: resolve, onerror: reject, ontimeout: reject
+            }));
+            if (response.status === 200) {
+                const data = JSON.parse(response.responseText);
+                if (data && data.tier) {
+                    const result = { tier: data.tier.toLowerCase() };
+                    localStorage.setItem(cacheKey, JSON.stringify(result));
+                    return result;
+                }
+            }
+        } catch (e) {
+            console.error(`ProtonDB: Ошибка получения рейтинга ${appId}:`, e);
+        }
+        return null;
+    }
+
+    function updateProtonDBBadge(appId, protonData) {
+        const badges = document.querySelectorAll(`.ss-protondb-badge[data-app-id="${appId}"]`);
+        badges.forEach(badge => {
+            if (!protonData || !PROTONDB_TIERS[protonData.tier]) {
+                badge.innerHTML = ICON.protondb + ' N/A';
+                badge.style.background = '#333333';
+                badge.style.borderColor = '#555555';
+                badge.style.color = '#999999';
+                return;
+            }
+            const tier = PROTONDB_TIERS[protonData.tier];
+            badge.innerHTML = ICON.protondb + ' ' + tier.label;
+            badge.style.background = tier.bg;
+            badge.style.borderColor = tier.border;
+            badge.style.color = tier.color;
+        });
+    }
+
     // ===================== ОБЗОРЫ STEAM =====================
 
     async function fetchReviewSummary(appId) {
@@ -532,6 +588,17 @@
             }
             .no-ru-btn-secondary:hover { background: #3d566e; filter: brightness(1.1); }
             .no-ru-btn-secondary svg { flex-shrink: 0; }
+
+            /* ProtonDB Badge */
+            .ss-protondb-badge {
+                background: #333333; color: #999999; border: 1px solid #555555;
+                border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: bold;
+                cursor: pointer; transition: all 0.15s; text-decoration: none;
+                display: inline-flex; align-items: center; gap: 5px;
+                font-family: Arial, sans-serif;
+            }
+            .ss-protondb-badge:hover { filter: brightness(1.2); }
+            .ss-protondb-badge svg { flex-shrink: 0; }
 
             /* Info Section */
             .no-ru-card-info {
@@ -903,13 +970,14 @@
         steamdbBtn.innerHTML = ICON.chart + ' SteamDB';
         btnRow.appendChild(steamdbBtn);
 
-        // ProtonDB button
-        const protondbBtn = document.createElement('a');
-        protondbBtn.href = `https://www.protondb.com/app/${gameData.appId}`;
-        protondbBtn.target = '_blank';
-        protondbBtn.className = 'no-ru-btn-secondary';
-        protondbBtn.innerHTML = ICON.protondb + ' ProtonDB';
-        btnRow.appendChild(protondbBtn);
+        // ProtonDB badge
+        const protondbBadge = document.createElement('a');
+        protondbBadge.href = `https://www.protondb.com/app/${gameData.appId}`;
+        protondbBadge.target = '_blank';
+        protondbBadge.className = 'ss-protondb-badge';
+        protondbBadge.dataset.appId = gameData.appId;
+        protondbBadge.innerHTML = ICON.protondb + ' ...';
+        btnRow.appendChild(protondbBadge);
 
         innerDiv.appendChild(btnRow);
 
@@ -1205,6 +1273,10 @@
                     subtitleText.innerText = `Проверяем игру ${processedAppIds.size}: обзоры...`;
                     const reviewData = await fetchReviewSummary(appId);
                     updateReviewBadge(appId, reviewData);
+
+                    subtitleText.innerText = `Проверяем игру ${processedAppIds.size}: ProtonDB...`;
+                    const protonData = await fetchProtonDBRating(appId);
+                    updateProtonDBBadge(appId, protonData);
 
                     if (ZOG_CHECK_ENABLED) {
                         subtitleText.innerText = `Проверяем игру ${processedAppIds.size}: русификатор ZOG...`;
