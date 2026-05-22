@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.6.2
+// @version         3.6.3
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -819,7 +819,7 @@
 
             /* === Sidebar === */
             .no-ru-sidebar {
-                width: 270px; flex-shrink: 0;
+                width: 240px; flex-shrink: 0;
                 background: #171a21; border-right: 1px solid #2d3138;
                 display: flex; flex-direction: column; overflow-y: auto;
                 scrollbar-width: thin; scrollbar-color: #2a2d34 #171a21;
@@ -1130,7 +1130,7 @@
         nameLink.appendChild(nameDiv);
         innerDiv.appendChild(nameLink);
 
-        // Button Row: Price + Options + SteamDB
+        // Button Row: Price + SteamDB
         const btnRow = document.createElement('div');
         btnRow.className = 'no-ru-card-buttons';
 
@@ -1141,18 +1141,6 @@
         priceBtn.className = 'no-ru-btn-price';
         priceBtn.textContent = gameData.price ? (gameData.price.toLowerCase().includes('free') ? 'Цена: Free' : `Цена: ${gameData.price}`) : 'Цена: N/A';
         btnRow.appendChild(priceBtn);
-
-        // Options button
-        const optionsBtn = document.createElement('button');
-        optionsBtn.className = 'no-ru-btn-secondary';
-        optionsBtn.innerHTML = ICON.cog + ' Опции';
-        optionsBtn.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const isHidden = infoSection.style.display === 'none';
-            infoSection.style.display = isHidden ? 'flex' : 'none';
-        };
-        btnRow.appendChild(optionsBtn);
 
         // SteamDB button
         const steamdbBtn = document.createElement('a');
