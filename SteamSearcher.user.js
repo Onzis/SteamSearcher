@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.5.9
+// @version         3.6.0
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -81,7 +81,7 @@
         warn: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="2" x2="6" y2="7"/><circle cx="6" cy="9.5" r="0.5" fill="currentColor"/></svg>',
         question: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4,4 A2,2 0 0,1 8,4 A2,2 0 0,1 4,4"/><circle cx="6" cy="9.5" r="0.5" fill="currentColor"/></svg>',
         error: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/></svg>',
-        loader: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6,2 A4,4 0 0,1 10,6"/></svg>',
+        loader: '<svg class="ss-spin" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6,2 A4,4 0 0,1 10,6"/></svg>',
         thumbsup: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>',
         shield: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>',
         doc: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM6 20V4h5v7h7v9H6z"/></svg>',
@@ -393,20 +393,23 @@
     }
 
     function updateProtonDBBadge(appId, protonData) {
-        const badges = document.querySelectorAll(`.ss-protondb-badge[data-app-id="${appId}"]`);
+        const badges = document.querySelectorAll(`.ss-protondb-badge-full[data-app-id="${appId}"]`);
         badges.forEach(badge => {
+            badge.classList.remove('platinum', 'gold', 'silver', 'bronze', 'borked', 'pending', 'na');
+
             if (!protonData || !PROTONDB_TIERS[protonData.tier]) {
-                badge.innerHTML = ICON.protondb + ' N/A';
-                badge.style.background = '#333333';
-                badge.style.borderColor = '#555555';
-                badge.style.color = '#999999';
+                badge.innerHTML = ICON.star + ' Tier: N/A';
+                badge.classList.add('na');
+                badge.href = '#';
                 return;
             }
-            const tier = PROTONDB_TIERS[protonData.tier];
-            badge.innerHTML = ICON.protondb + ' ' + tier.label;
-            badge.style.background = tier.bg;
-            badge.style.borderColor = tier.border;
-            badge.style.color = tier.color;
+
+            const rawTier = protonData.tier.toLowerCase();
+            const upperLabel = rawTier.charAt(0).toUpperCase() + rawTier.slice(1);
+            
+            badge.innerHTML = ICON.star + ' ' + upperLabel;
+            badge.classList.add(rawTier);
+            badge.href = `https://www.protondb.com/app/${appId}`;
         });
     }
 
@@ -473,205 +476,394 @@
         const style = document.createElement('style');
         style.id = 'no-ru-styles';
         style.innerHTML = `
+            /* === Fonts & Global overrides === */
+            #no-ru-modal-overlay {
+                font-family: 'Motiva Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif !important;
+            }
+
             /* === Scrollbar === */
-            #no-ru-modal-content::-webkit-scrollbar { width: 10px !important; }
-            #no-ru-modal-content::-webkit-scrollbar-track { background: #1a1a1a !important; border-radius: 0 0 8px 0 !important; }
-            #no-ru-modal-content::-webkit-scrollbar-thumb { background: #3d3d3d !important; border-radius: 5px !important; }
-            #no-ru-modal-content::-webkit-scrollbar-thumb:hover { background: #4a4a4a !important; }
+            #no-ru-modal-content {
+                padding: 24px !important;
+                overflow-y: scroll !important;
+                flex: 1 !important;
+                min-height: 0 !important;
+                display: grid !important;
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+                grid-auto-rows: max-content !important;
+                gap: 24px !important;
+                align-content: start !important;
+                background: #0d0f13 !important;
+                overscroll-behavior: contain !important;
+                scrollbar-width: thin !important;
+                scrollbar-color: #2f343f #0d0f13 !important;
+                scrollbar-gutter: stable !important;
+            }
+            #no-ru-modal-content::-webkit-scrollbar { width: 8px !important; }
+            #no-ru-modal-content::-webkit-scrollbar-track { background: #0d0f13 !important; }
+            #no-ru-modal-content::-webkit-scrollbar-thumb { background: #2f343f !important; border-radius: 4px !important; }
+            #no-ru-modal-content::-webkit-scrollbar-thumb:hover { background: #3d4351 !important; }
             body.no-ru-modal-open { overflow: hidden !important; }
 
-            /* === Control Buttons === */
-            .no-ru-btn { border: none; color: #b0b0b0; width: 38px; height: 38px; border-radius: 6px;
-                background: #333333; cursor: pointer; transition: all 0.15s;
-                display: flex; align-items: center; justify-content: center; }
-            .no-ru-btn:hover { background: #444444; color: #fff; }
-            .no-ru-btn:active { transform: scale(0.92); }
+            /* === Control & Card Buttons (Unified Gray Style) === */
+            .no-ru-btn, .no-ru-btn-price, .no-ru-btn-secondary {
+                border: 1px solid #3c4350 !important;
+                background: #20232a !important;
+                color: #dfe3e6 !important;
+                border-radius: 6px !important;
+                cursor: pointer !important;
+                transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                text-decoration: none !important;
+                font-family: inherit !important;
+                font-size: 13px !important;
+                font-weight: 600 !important;
+                box-sizing: border-box !important;
+            }
+
+            .no-ru-btn {
+                width: 38px;
+                height: 38px;
+            }
+
+            .no-ru-btn-price {
+                border: 1px solid rgba(71, 201, 117, 0.4) !important;
+                background: rgba(71, 201, 117, 0.15) !important;
+                color: #47c975 !important;
+                padding: 8px 14px !important;
+                font-weight: 700 !important;
+            }
+
+            .no-ru-btn-secondary {
+                padding: 8px 14px !important;
+                gap: 6px !important;
+            }
+
+            .no-ru-btn:hover, .no-ru-btn-secondary:hover {
+                background: #2e333e !important;
+                border-color: #535d6f !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            }
+
+            .no-ru-btn-price:hover {
+                background: rgba(71, 201, 117, 0.25) !important;
+                border-color: #47c975 !important;
+                color: #ffffff !important;
+                box-shadow: 0 4px 12px rgba(71, 201, 117, 0.2) !important;
+            }
+
+            .no-ru-btn:active, .no-ru-btn-price:active, .no-ru-btn-secondary:active {
+                transform: scale(0.96) !important;
+            }
+
+            /* === Modal Layout === */
+            #no-ru-modal-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(10, 14, 22, 0.85); backdrop-filter: blur(12px);
+                z-index: 99999; display: none;
+                justify-content: center; align-items: center;
+            }
+
+            #no-ru-modal {
+                width: 100%; max-width: 100%; height: 100%; background: #0c0d12;
+                border-radius: 0; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+                display: flex; flex-direction: column; overflow: hidden;
+                border: 1px solid #2d3138;
+            }
+
+            .no-ru-header {
+                background: linear-gradient(90deg, #1f2126 0%, #171a21 100%);
+                padding: 16px 24px; display: flex;
+                justify-content: space-between; align-items: center;
+                border-bottom: 1px solid #2d3138; flex-shrink: 0;
+            }
+
+            #no-ru-modal-title {
+                color: #ffffff; margin: 0; font-size: 18px; font-weight: 700;
+                letter-spacing: 0.3px;
+            }
+
+            #no-ru-modal-subtitle {
+                color: #acb2b8; font-size: 13px; margin-top: 4px;
+            }
+
+            .no-ru-header-buttons {
+                display: flex; gap: 8px;
+            }
 
             /* === FAB === */
             .ss-fab {
                 position: fixed; bottom: 28px; left: 28px; z-index: 9998;
-                width: 50px; height: 50px; border-radius: 50%; border: none;
-                background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-                color: #ffffff; cursor: pointer;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 2px #333333;
+                width: 52px; height: 52px; border-radius: 50%; border: 1px solid #3c495e;
+                background: #171a21; color: #66c0f4; cursor: pointer;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4);
                 display: flex; align-items: center; justify-content: center;
-                transition: all 0.2s ease;
+                transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             }
             .ss-fab:hover {
                 transform: scale(1.1);
-                box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 20px rgba(255,255,255,0.1), 0 0 0 2px #444444;
-                color: #fff;
+                background: #1b2838; border-color: #66c0f4; color: #ffffff;
+                box-shadow: 0 12px 40px rgba(102, 192, 244, 0.25);
             }
             .ss-fab:active { transform: scale(0.95); }
 
             /* === Game Card === */
             .no-ru-game-card {
                 display: flex; flex-direction: column;
-                background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-                border: 2px solid #333333;
-                border-radius: 12px;
-                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                background: #101114; border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 20px;
+                transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s ease, box-shadow 0.2s ease;
                 overflow: hidden; color: #ffffff; position: relative;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+                box-shadow: 0 12px 36px rgba(0,0,0,0.65);
             }
             .no-ru-game-card:hover {
                 transform: translateY(-4px);
-                box-shadow: 0 14px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
-                border-color: #444444;
+                border-color: #3c495e;
+                box-shadow: 0 16px 40px rgba(0,0,0,0.8);
             }
-            .no-ru-game-card:hover .no-ru-card-img img { transform: scale(1.05); }
+            .no-ru-game-card:hover .no-ru-card-img img { transform: scale(1.04); }
 
             /* Card Image */
-            .no-ru-card-img { position: relative; overflow: hidden; }
+            .no-ru-card-img { position: relative; overflow: hidden; background: #0c121a; }
             .no-ru-card-img::after {
                 content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
-                background: linear-gradient(to top, #2a2a2a, transparent); z-index: 1; pointer-events: none;
+                background: linear-gradient(to top, #101114 0%, transparent 100%) !important; z-index: 1; pointer-events: none;
             }
             .no-ru-card-img img {
                 width: 100%; aspect-ratio: 16/7; object-fit: cover; display: block;
-                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                background: #1a1a1a;
+                transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                background: #0c121a;
             }
 
             /* Review Badge Overlay */
             .ss-review-badge {
-                position: absolute; bottom: 8px; left: 8px; z-index: 2;
-                display: inline-flex; align-items: center; gap: 6px;
-                font-size: 13px; padding: 6px 12px; border-radius: 6px;
-                font-weight: bold; white-space: nowrap;
-                backdrop-filter: blur(8px);
-                text-shadow: 0 1px 3px rgba(0,0,0,0.9);
-                box-shadow: 0 2px 12px rgba(0,0,0,0.7);
+                position: absolute; bottom: 12px !important; left: 12px !important; z-index: 2;
+                display: inline-flex; align-items: center; gap: 8px;
+                font-size: 12px !important; padding: 6px 14px !important; border-radius: 8px !important;
+                font-weight: 600 !important; white-space: nowrap;
+                backdrop-filter: blur(12px) !important;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.6) !important;
                 pointer-events: none; letter-spacing: 0.2px;
-                border: 1px solid rgba(255,255,255,0.12);
+                border: 1.5px solid rgba(255,255,255,0.08);
             }
             .ss-review-icon { display: inline-flex; align-items: center; }
-            .ss-review-badge.overwhelmingly-positive { background: rgba(27, 94, 32, 0.95); color: #fff; border-color: rgba(76, 175, 80, 0.8); }
-            .ss-review-badge.very-positive { background: rgba(46, 125, 50, 0.95); color: #fff; border-color: rgba(102, 187, 106, 0.8); }
-            .ss-review-badge.positive { background: rgba(56, 142, 60, 0.93); color: #fff; border-color: rgba(129, 199, 132, 0.7); }
-            .ss-review-badge.mostly-positive { background: rgba(67, 160, 71, 0.9); color: #fff; border-color: rgba(165, 214, 167, 0.6); }
-            .ss-review-badge.mixed { background: rgba(130, 100, 0, 0.93); color: #fff; border-color: rgba(255, 193, 7, 0.7); }
-            .ss-review-badge.mostly-negative { background: rgba(160, 90, 0, 0.93); color: #fff; border-color: rgba(255, 152, 0, 0.7); }
-            .ss-review-badge.negative { background: rgba(160, 30, 30, 0.93); color: #fff; border-color: rgba(244, 67, 54, 0.7); }
-            .ss-review-badge.very-negative { background: rgba(130, 20, 20, 0.95); color: #fff; border-color: rgba(211, 47, 47, 0.8); }
-            .ss-review-badge.no-reviews { background: rgba(0, 0, 0, 0.85); color: #b0b0b0; border-color: rgba(158, 158, 158, 0.4); }
+            .ss-review-badge.overwhelmingly-positive { background: rgba(43, 80, 44, 0.35) !important; color: #86e293 !important; border-color: #47c975 !important; }
+            .ss-review-badge.very-positive { background: rgba(43, 80, 44, 0.35) !important; color: #86e293 !important; border-color: #47c975 !important; }
+            .ss-review-badge.positive { background: rgba(43, 80, 44, 0.3) !important; color: #86e293 !important; border-color: #81c784 !important; }
+            .ss-review-badge.mostly-positive { background: rgba(43, 80, 44, 0.3) !important; color: #86e293 !important; border-color: #a5d6a7 !important; }
+            .ss-review-badge.mixed { background: rgba(110, 85, 5, 0.3) !important; color: #e9c159 !important; border-color: #d4a30a !important; }
+            .ss-review-badge.mostly-negative { background: rgba(130, 70, 5, 0.3) !important; color: #e58d4a !important; border-color: #e67e22 !important; }
+            .ss-review-badge.negative { background: rgba(130, 25, 25, 0.35) !important; color: #f19f9f !important; border-color: #c0392b !important; }
+            .ss-review-badge.very-negative { background: rgba(110, 15, 15, 0.35) !important; color: #f19f9f !important; border-color: #962828 !important; }
+            .ss-review-badge.no-reviews { background: rgba(20, 24, 30, 0.6) !important; color: #acb2b8 !important; border-color: rgba(158, 158, 158, 0.3) !important; }
 
             /* Card Body */
             .no-ru-card-body {
-                padding: 16px; display: flex; flex-direction: column; flex: 1; gap: 10px;
+                padding: 18px !important; display: flex; flex-direction: column; flex: 1; gap: 14px;
             }
 
             /* Game Title */
             .no-ru-card-title { text-decoration: none; color: #ffffff; transition: color 0.15s; display: block; }
-            .no-ru-card-title:hover { color: #e0e0e0; }
+            .no-ru-card-title:hover { color: #66c0f4; }
             .no-ru-card-title-text {
-                font-weight: 700; font-size: 20px; line-height: 1.3;
+                font-weight: 700; font-size: 20px !important; line-height: 1.3 !important;
                 display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-                font-family: Arial, sans-serif;
+                font-family: inherit;
             }
 
             /* Button Row */
-            .no-ru-card-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
-            .no-ru-btn-price {
-                background: #27ae60; color: #ffffff; border: 1px solid #219150;
-                border-radius: 6px; padding: 8px 14px; font-size: 14px; font-weight: bold;
-                cursor: pointer; transition: all 0.15s; text-decoration: none;
-                display: inline-flex; align-items: center; font-family: Arial, sans-serif;
+            .no-ru-card-buttons {
+                display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto;
             }
-            .no-ru-btn-price:hover { background: #219a52; color: #ffffff; }
-            .no-ru-btn-secondary {
-                background: #34495e; color: #ffffff; border: 1px solid #2c3e50;
-                border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: bold;
-                cursor: pointer; transition: all 0.15s; text-decoration: none;
-                display: inline-flex; align-items: center; gap: 5px;
-                font-family: Arial, sans-serif;
-            }
-            .no-ru-btn-secondary:hover { background: #3d566e; filter: brightness(1.1); }
-            .no-ru-btn-secondary svg { flex-shrink: 0; }
-
-            /* ProtonDB Badge */
-            .ss-protondb-badge {
-                background: #333333; color: #999999; border: 1px solid #555555;
-                border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: bold;
-                cursor: pointer; transition: all 0.15s; text-decoration: none;
-                display: inline-flex; align-items: center; gap: 5px;
-                font-family: Arial, sans-serif;
-            }
-            .ss-protondb-badge:hover { filter: brightness(1.2); }
-            .ss-protondb-badge svg { flex-shrink: 0; }
 
             /* Info Section */
             .no-ru-card-info {
-                display: flex; flex-direction: column; gap: 8px;
-                padding: 12px 0 0; border-top: 1px solid #333333;
+                display: flex !important; flex-direction: column !important; gap: 10px !important;
+                background: #13161c !important;
+                border: 1px solid #232831 !important;
+                border-radius: 12px !important;
+                padding: 14px 16px !important;
             }
             .no-ru-info-row {
                 display: flex; align-items: flex-start; gap: 8px;
                 font-size: 13px; color: #ffffff; line-height: 1.5;
             }
-            .no-ru-info-row svg { flex-shrink: 0; margin-top: 1px; }
-            .no-ru-info-icon-green { color: #27ae60; }
-            .no-ru-info-icon-blue { color: #3498db; }
-            .no-ru-info-label { color: #b0b0b0; }
-            .no-ru-info-value { color: #ffffff; }
-            .no-ru-info-link { color: #3498db; text-decoration: none; transition: color 0.15s; }
-            .no-ru-info-link:hover { color: #5dade2; text-decoration: underline; }
+            .no-ru-info-row svg { flex-shrink: 0; margin-top: 2px; }
+            .no-ru-info-icon-green { color: #47c975; }
+            .no-ru-info-icon-blue { color: #66c0f4;  }
+            .no-ru-info-label { color: #acb2b8; }
+            .no-ru-info-value { color: #ffffff; font-weight: 600; }
+            .no-ru-info-link { color: #66c0f4; text-decoration: none; transition: color 0.15s; }
+            .no-ru-info-link:hover { color: #85d6ff; text-decoration: underline; }
 
             /* Loc List */
-            .zog-loc-list { margin-top: 6px; padding-left: 0; list-style: none; }
-            .zog-loc-list li { font-size: 12px; color: #ffffff; margin-bottom: 5px; line-height: 1.4; display: flex; align-items: flex-start; gap: 6px; }
-            .zog-loc-list li svg { flex-shrink: 0; margin-top: 1px; color: #3498db; }
-            .zog-loc-list a { color: #3498db; text-decoration: none; transition: color 0.15s; }
-            .zog-loc-list a:hover { color: #5dade2; text-decoration: underline; }
+            .zog-loc-list { margin-top: 6px; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+            .zog-loc-list li { font-size: 13px !important; color: #ffffff; margin-bottom: 0; line-height: 1.4; display: flex; align-items: center; gap: 8px; }
+            .zog-loc-list li svg { flex-shrink: 0; color: #3b4252 !important; }
+            .zog-loc-list a { color: #acb2b8; text-decoration: none; transition: color 0.15s; }
+            .zog-loc-list a:hover { color: #66c0f4; text-decoration: underline; }
+
+            /* Tree line */
+            .ss-tree-line {
+                color: #2e3440 !important;
+                font-family: monospace !important;
+                font-size: 14px !important;
+                font-weight: bold !important;
+                user-select: none !important;
+            }
+
+            /* ProtonDB Banner - Full Width */
+            .ss-protondb-badge-full {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 8px !important;
+                width: 100% !important;
+                padding: 10px 16px !important;
+                border-radius: 8px !important;
+                font-size: 13px !important;
+                font-weight: 700 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.8px !important;
+                text-decoration: none !important;
+                box-sizing: border-box !important;
+                transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+                margin-top: 4px !important;
+            }
+            .ss-protondb-badge-full:active {
+                transform: scale(0.98) !important;
+            }
+
+            .ss-protondb-badge-full.platinum {
+                border: 1px solid #a855f7 !important;
+                background: linear-gradient(90deg, rgba(88, 28, 135, 0.4) 0%, rgba(124, 58, 237, 0.1) 100%) !important;
+                color: #e9d8fd !important;
+                box-shadow: 0 4px 15px rgba(168, 85, 247, 0.2) !important;
+            }
+            .ss-protondb-badge-full.platinum:hover {
+                background: linear-gradient(90deg, rgba(88, 28, 135, 0.6) 0%, rgba(124, 58, 237, 0.2) 100%) !important;
+                border-color: #c084fc !important;
+                color: #ffffff !important;
+                box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45) !important;
+            }
+
+            .ss-protondb-badge-full.gold {
+                border: 1px solid #eab308 !important;
+                background: linear-gradient(90deg, rgba(113, 63, 4, 0.4) 0%, rgba(202, 138, 4, 0.1) 100%) !important;
+                color: #fef08a !important;
+                box-shadow: 0 4px 15px rgba(234, 179, 8, 0.2) !important;
+            }
+            .ss-protondb-badge-full.gold:hover {
+                background: linear-gradient(90deg, rgba(113, 63, 4, 0.6) 0%, rgba(202, 138, 4, 0.2) 100%) !important;
+                border-color: #fde047 !important;
+                color: #ffffff !important;
+                box-shadow: 0 6px 20px rgba(234, 179, 8, 0.45) !important;
+            }
+
+            .ss-protondb-badge-full.silver {
+                border: 1px solid #9ca3af !important;
+                background: linear-gradient(90deg, rgba(55, 65, 81, 0.4) 0%, rgba(107, 114, 128, 0.1) 100%) !important;
+                color: #f3f4f6 !important;
+                box-shadow: 0 4px 15px rgba(156, 163, 175, 0.15) !important;
+            }
+            .ss-protondb-badge-full.silver:hover {
+                background: linear-gradient(90deg, rgba(55, 65, 81, 0.6) 0%, rgba(107, 114, 128, 0.2) 100%) !important;
+                border-color: #cbd5e1 !important;
+                color: #ffffff !important;
+                box-shadow: 0 6px 20px rgba(156, 163, 175, 0.35) !important;
+            }
+
+            .ss-protondb-badge-full.bronze {
+                border: 1px solid #b45309 !important;
+                background: linear-gradient(90deg, rgba(120, 53, 4, 0.4) 0%, rgba(180, 83, 9, 0.1) 100%) !important;
+                color: #ffedd5 !important;
+                box-shadow: 0 4px 15px rgba(180, 83, 9, 0.15) !important;
+            }
+            .ss-protondb-badge-full.bronze:hover {
+                background: linear-gradient(90deg, rgba(120, 53, 4, 0.6) 0%, rgba(180, 83, 9, 0.2) 100%) !important;
+                border-color: #fb923c !important;
+                color: #ffffff !important;
+                box-shadow: 0 6px 20px rgba(180, 83, 9, 0.35) !important;
+            }
+
+            .ss-protondb-badge-full.borked {
+                border: 1px solid #ef4444 !important;
+                background: linear-gradient(90deg, rgba(153, 27, 27, 0.4) 0%, rgba(220, 38, 38, 0.1) 100%) !important;
+                color: #fee2e2 !important;
+                box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2) !important;
+            }
+            .ss-protondb-badge-full.borked:hover {
+                background: linear-gradient(90deg, rgba(153, 27, 27, 0.6) 0%, rgba(220, 38, 38, 0.2) 100%) !important;
+                border-color: #fca5a5 !important;
+                color: #ffffff !important;
+                box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4) !important;
+            }
+
+            .ss-protondb-badge-full.pending, .ss-protondb-badge-full.na {
+                border: 1px solid #4b5563 !important;
+                background: #1f2937 !important;
+                color: #9ca3af !important;
+            }
+            .ss-protondb-badge-full.pending:hover, .ss-protondb-badge-full.na:hover {
+                background: #374151 !important;
+                color: #ffffff !important;
+            }
 
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            .ss-spin { animation: spin 1s linear infinite; display: inline-block; }
 
             /* === Body Wrapper: Sidebar + Content === */
             .no-ru-body-wrapper { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 
             /* === Sidebar === */
             .no-ru-sidebar {
-                width: 14%; min-width: 180px; flex-shrink: 0;
-                background: #1a1a1a; border-right: 1px solid #333333;
+                width: 240px; flex-shrink: 0;
+                background: #171a21; border-right: 1px solid #2d3138;
                 display: flex; flex-direction: column; overflow-y: auto;
-                scrollbar-width: thin; scrollbar-color: #3d3d3d #1a1a1a;
+                scrollbar-width: thin; scrollbar-color: #2a2d34 #171a21;
             }
             .no-ru-sidebar-header {
-                padding: 16px 16px 12px; color: #ffffff; font-size: 14px; font-weight: bold;
-                text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #333333;
+                padding: 24px 16px 12px; color: #acb2b8; font-size: 12px; font-weight: 700;
+                text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #2d3138;
             }
             .no-ru-filter-item {
-                display: flex; align-items: center; gap: 10px; padding: 10px 16px; cursor: pointer;
-                transition: background 0.15s; user-select: none;
+                display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer;
+                transition: background 0.15s; user-select: none; margin: 2px 8px; border-radius: 6px;
             }
-            .no-ru-filter-item:hover { background: rgba(255,255,255,0.05); }
-            .no-ru-filter-item.disabled { opacity: 0.4; }
-            .no-ru-filter-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; border: 2px solid; }
-            .no-ru-filter-dot.found { background: rgba(39, 174, 96, 0.6); border-color: #27ae60; }
-            .no-ru-filter-dot.no-translations { background: rgba(255, 152, 0, 0.6); border-color: #FF9800; }
-            .no-ru-filter-dot.not-found { background: rgba(158, 158, 158, 0.6); border-color: #9e9e9e; }
-            .no-ru-filter-dot.error { background: rgba(244, 67, 54, 0.6); border-color: #f44336; }
-            .no-ru-filter-dot.checking { background: rgba(102, 192, 244, 0.6); border-color: #66c0f4; }
-            .no-ru-filter-dot.off { background: transparent !important; }
-            .no-ru-filter-label { flex: 1; color: #ffffff; font-size: 12px; line-height: 1.3; }
-            .no-ru-filter-count { color: #b0b0b0; font-size: 11px; font-weight: bold; min-width: 20px; text-align: right; }
+            .no-ru-filter-item:hover { background: rgba(255,255,255,0.04); }
+            .no-ru-filter-item.disabled { opacity: 0.45; }
+            .no-ru-filter-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+            .no-ru-filter-dot.found { background: #47c975; }
+            .no-ru-filter-dot.no-translations { background: #f39c12; }
+            .no-ru-filter-dot.not-found { background: #7f8c8d; }
+            .no-ru-filter-dot.error { background: #ec7063; }
+            .no-ru-filter-dot.checking { background: #5dade2; }
+            .no-ru-filter-dot.off { background: transparent !important; border: 1.5px solid #acb2b8; }
+            .no-ru-filter-label { flex: 1; color: #dfe3e6; font-size: 13px; line-height: 1.3; }
+            .no-ru-filter-count { color: #8598a6; font-size: 11px; font-weight: 700; min-width: 24px; text-align: right; }
+            
+            /* Unified Steam Switch */
             .no-ru-filter-toggle {
-                width: 32px; height: 18px; border-radius: 9px; background: #3d3d3d;
-                position: relative; transition: background 0.2s; flex-shrink: 0;
+                width: 34px; height: 18px; border-radius: 9px; background: #2a2d34;
+                position: relative; transition: background 0.2s ease; flex-shrink: 0;
             }
-            .no-ru-filter-toggle.on { background: #27ae60; }
+            .no-ru-filter-toggle.on { background: #4b69ff; } /* Steam Deck blue toggle */
             .no-ru-filter-toggle::after {
                 content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
-                border-radius: 50%; background: #fff; transition: transform 0.2s;
+                border-radius: 50%; background: #ffffff; transition: transform 0.2s ease;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
             }
-            .no-ru-filter-toggle.on::after { transform: translateX(14px); }
-            .no-ru-sidebar-divider { height: 1px; background: #333333; margin: 8px 16px; }
-            .no-ru-sidebar-stats { padding: 12px 16px; color: #b0b0b0; font-size: 11px; line-height: 1.6; }
+            .no-ru-filter-toggle.on::after { transform: translateX(16px); }
+
+            .no-ru-sidebar-divider { height: 1px; background: #2d3138; margin: 16px 16px; }
+            .no-ru-sidebar-stats { padding: 12px 24px; color: #acb2b8; font-size: 12px; line-height: 1.8; }
             .no-ru-sidebar-stats span { color: #ffffff; font-weight: bold; }
 
             .no-ru-hidden-card { display: none !important; }
-            .no-ru-card-loc-link { font-size: 12px; color: #3498db; text-decoration: none; margin-top: 4px; display: inline-block; transition: color 0.15s; }
-            .no-ru-card-loc-link:hover { color: #5dade2; text-decoration: underline; }
+            .no-ru-card-loc-link { font-size: 12px; color: #66c0f4; text-decoration: none; margin-top: 4px; display: inline-block; transition: color 0.15s; }
+            .no-ru-card-loc-link:hover { color: #85d6ff; text-decoration: underline; }
         `;
         document.head.appendChild(style);
     }
@@ -714,11 +906,6 @@
 
         const overlay = document.createElement('div');
         overlay.id = 'no-ru-modal-overlay';
-        overlay.style.cssText = `
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.9); z-index: 99999; display: none;
-            justify-content: center; align-items: center; font-family: Arial, sans-serif;
-        `;
 
         overlay.addEventListener('wheel', (e) => {
             e.preventDefault();
@@ -729,37 +916,26 @@
         }, { passive: false });
 
         const modal = document.createElement('div');
-        modal.style.cssText = `
-            width: 100%; max-width: 100%; height: 100%; background: #1a1a1a;
-            border-radius: 0; box-shadow: 0 0 30px rgba(0,0,0,0.8);
-            display: flex; flex-direction: column; overflow: hidden; border: 1px solid #333333;
-        `;
+        modal.id = 'no-ru-modal';
 
         // Header
         const header = document.createElement('div');
-        header.style.cssText = `
-            background: linear-gradient(90deg, #222222 0%, #1a1a1a 100%);
-            padding: 15px 20px; display: flex;
-            justify-content: space-between; align-items: center;
-            border-bottom: 1px solid #333333; flex-shrink: 0;
-        `;
+        header.className = 'no-ru-header';
 
         const titleContainer = document.createElement('div');
         const title = document.createElement('h2');
         title.id = 'no-ru-modal-title';
         title.innerText = 'Подготовка к сканированию...';
-        title.style.cssText = 'color: #ffffff; margin: 0; font-size: 18px; font-weight: bold;';
 
         const subtitle = document.createElement('div');
         subtitle.id = 'no-ru-modal-subtitle';
-        subtitle.style.cssText = 'color: #b0b0b0; font-size: 13px; margin-top: 5px;';
         subtitle.innerText = 'Идет поиск...';
 
         titleContainer.appendChild(title);
         titleContainer.appendChild(subtitle);
 
         const buttonsDiv = document.createElement('div');
-        buttonsDiv.style.cssText = 'display: flex; gap: 8px;';
+        buttonsDiv.className = 'no-ru-header-buttons';
 
         // Кнопка Стоп/Продолжить
         const stopBtn = document.createElement('button');
@@ -885,13 +1061,6 @@
         // ===== Content area =====
         const content = document.createElement('div');
         content.id = 'no-ru-modal-content';
-        content.style.cssText = `
-            padding: 20px; overflow-y: scroll; flex: 1; min-height: 0;
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            grid-auto-rows: max-content; gap: 20px; align-content: start; background: #111111;
-            overscroll-behavior: contain;
-            scrollbar-width: thin; scrollbar-color: #3d3d3d #1a1a1a; scrollbar-gutter: stable;
-        `;
 
         bodyWrapper.appendChild(sidebar);
         bodyWrapper.appendChild(content);
@@ -970,8 +1139,20 @@
         priceBtn.href = gameData.link;
         priceBtn.target = '_blank';
         priceBtn.className = 'no-ru-btn-price';
-        priceBtn.textContent = gameData.price || 'N/A';
+        priceBtn.textContent = gameData.price ? (gameData.price.toLowerCase().includes('free') ? 'Цена: Free' : `Цена: ${gameData.price}`) : 'Цена: N/A';
         btnRow.appendChild(priceBtn);
+
+        // Options button
+        const optionsBtn = document.createElement('button');
+        optionsBtn.className = 'no-ru-btn-secondary';
+        optionsBtn.innerHTML = ICON.cog + ' Опции';
+        optionsBtn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const isHidden = infoSection.style.display === 'none';
+            infoSection.style.display = isHidden ? 'flex' : 'none';
+        };
+        btnRow.appendChild(optionsBtn);
 
         // SteamDB button
         const steamdbBtn = document.createElement('a');
@@ -980,15 +1161,6 @@
         steamdbBtn.className = 'no-ru-btn-secondary';
         steamdbBtn.innerHTML = ICON.chart + ' SteamDB';
         btnRow.appendChild(steamdbBtn);
-
-        // ProtonDB badge
-        const protondbBadge = document.createElement('a');
-        protondbBadge.href = `https://www.protondb.com/app/${gameData.appId}`;
-        protondbBadge.target = '_blank';
-        protondbBadge.className = 'ss-protondb-badge';
-        protondbBadge.dataset.appId = gameData.appId;
-        protondbBadge.innerHTML = ICON.protondb + ' ...';
-        btnRow.appendChild(protondbBadge);
 
         innerDiv.appendChild(btnRow);
 
@@ -1010,6 +1182,15 @@
         infoSection.appendChild(zogLocContainer);
 
         innerDiv.appendChild(infoSection);
+
+        // ProtonDB banner at the bottom (full width styled with custom star icon)
+        const protondbBadge = document.createElement('a');
+        protondbBadge.href = `https://www.protondb.com/app/${gameData.appId}`;
+        protondbBadge.target = '_blank';
+        protondbBadge.className = 'ss-protondb-badge-full pending';
+        protondbBadge.dataset.appId = gameData.appId;
+        protondbBadge.innerHTML = ICON.star + ' Loading ProtonDB...';
+        innerDiv.appendChild(protondbBadge);
 
         gameItem.appendChild(innerDiv);
         content.appendChild(gameItem);
@@ -1073,13 +1254,13 @@
             const card = el.closest('.no-ru-game-card');
             switch (zogResult.status) {
                 case 'found':
-                    el.textContent = 'Есть' + (zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : '');
-                    el.style.color = '#27ae60';
+                    el.textContent = 'Полная' + (zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : '');
+                    el.style.color = '#47c975';
                     if (card) card.dataset.locStatus = 'found';
                     zogFoundCount++;
                     break;
                 case 'no_translations':
-                    el.textContent = 'Нет русификатора' + (zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : '');
+                    el.textContent = 'Нет перевода' + (zogResult.matchPercent ? ` (${zogResult.matchPercent}%)` : '');
                     el.style.color = '#FF9800';
                     if (card) card.dataset.locStatus = 'no_translations';
                     break;
@@ -1101,10 +1282,11 @@
                 container.style.display = 'block';
                 const list = document.createElement('ul');
                 list.className = 'zog-loc-list';
+                const treeLine = '<span class="ss-tree-line">└─</span>';
                 const fileIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>';
                 zogResult.localizations.forEach(loc => {
                     const li = document.createElement('li');
-                    li.innerHTML = fileIcon;
+                    li.innerHTML = treeLine + ' ' + fileIcon;
                     const a = document.createElement('a');
                     a.href = loc.link;
                     a.target = '_blank';
