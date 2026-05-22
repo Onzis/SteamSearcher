@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.5.8
+// @version         3.5.9
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -909,8 +909,12 @@
         gameItem.className = 'no-ru-game-card';
         gameItem.dataset.locStatus = 'checking';
 
-        // Use higher quality image
-        const hqImg = gameData.img.replace('capsule_sm_120', 'capsule_231x87').replace('capsule_184x69', 'capsule_231x87');
+        // Use higher quality image (616x353 for crisp display in cards)
+        // Regex catches ALL capsule variants (capsule_sm_120, capsule_184x69, capsule_231x87, capsule_467x181, etc.)
+        // Also handles header.jpg -> capsule_616x353.jpg
+        const hqImg = gameData.img
+            .replace(/capsule_\w+/g, 'capsule_616x353')
+            .replace(/header\.jpg/g, 'capsule_616x353.jpg');
 
         // ===== Header Image =====
         const imgWrapper = document.createElement('div');
@@ -922,7 +926,14 @@
         const img = document.createElement('img');
         img.src = hqImg;
         img.loading = 'lazy';
-        img.onerror = function() { this.src = gameData.img; };
+        img.onerror = function() {
+            // Fallback: try medium quality, then original
+            if (this.src.includes('capsule_616x353')) {
+                this.src = this.src.replace('capsule_616x353', 'capsule_231x87');
+            } else {
+                this.src = gameData.img;
+            }
+        };
         imgLink.appendChild(img);
         imgWrapper.appendChild(imgLink);
 
