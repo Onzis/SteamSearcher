@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.5.7
+// @version         3.5.8
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -578,7 +578,7 @@
                 cursor: pointer; transition: all 0.15s; text-decoration: none;
                 display: inline-flex; align-items: center; font-family: Arial, sans-serif;
             }
-            .no-ru-btn-price:hover { background: #2ecc71; filter: brightness(1.1); }
+            .no-ru-btn-price:hover { background: #219a52; color: #ffffff; }
             .no-ru-btn-secondary {
                 background: #34495e; color: #ffffff; border: 1px solid #2c3e50;
                 border-radius: 6px; padding: 8px 14px; font-size: 13px; font-weight: bold;
