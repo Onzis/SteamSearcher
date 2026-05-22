@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.6.0
+// @version         3.6.1
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -675,7 +675,7 @@
 
             /* Button Row */
             .no-ru-card-buttons {
-                display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto;
+                display: flex; gap: 8px; flex-wrap: wrap;
             }
 
             /* Info Section */
@@ -730,7 +730,7 @@
                 text-decoration: none !important;
                 box-sizing: border-box !important;
                 transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-                margin-top: 4px !important;
+                margin-top: auto !important;
             }
             .ss-protondb-badge-full:active {
                 transform: scale(0.98) !important;
