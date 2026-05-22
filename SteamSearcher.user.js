@@ -819,7 +819,7 @@
 
             /* === Sidebar === */
             .no-ru-sidebar {
-                width: 240px; flex-shrink: 0;
+                width: 270px; flex-shrink: 0;
                 background: #171a21; border-right: 1px solid #2d3138;
                 display: flex; flex-direction: column; overflow-y: auto;
                 scrollbar-width: thin; scrollbar-color: #2a2d34 #171a21;
