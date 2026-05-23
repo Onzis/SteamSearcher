@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.6.3
+// @version         3.6.4
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -90,6 +90,11 @@
         chart: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>',
         protondb: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/><path d="M12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>',
         star: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>',
+        filter: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M4.25 5.61C4.06 5.43 3.96 5.18 4 4.92V3.5C4 3.22 4.22 3 4.5 3h15c.28 0 .5.22.5.5v1.42c.04.26-.06.51-.25.69l-5.5 5.5v7.64c0 .17-.07.34-.2.45l-3.5 2.5c-.19.14-.46.12-.63-.05-.08-.08-.12-.19-.12-.3v-10.24l-5.5-5.5z"/></svg>',
+        layers: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+        eye: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+        eyeSlash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',
+        clock: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
     };
 
     // ===================== УТИЛИТЫ ДЛЯ ZOG =====================
@@ -507,9 +512,9 @@
             /* === Control & Card Buttons (Unified Gray Style) === */
             .no-ru-btn, .no-ru-btn-price, .no-ru-btn-secondary {
                 border: 1px solid #3c4350 !important;
-                background: #20232a !important;
+                background: linear-gradient(180deg, #242933 0%, #171a21 100%) !important;
                 color: #dfe3e6 !important;
-                border-radius: 6px !important;
+                border-radius: 8px !important;
                 cursor: pointer !important;
                 transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
                 display: inline-flex !important;
@@ -520,6 +525,7 @@
                 font-size: 13px !important;
                 font-weight: 600 !important;
                 box-sizing: border-box !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
             }
 
             .no-ru-btn {
@@ -528,8 +534,6 @@
             }
 
             .no-ru-btn-price {
-                border: 1px solid rgba(71, 201, 117, 0.4) !important;
-                background: rgba(71, 201, 117, 0.15) !important;
                 color: #47c975 !important;
                 padding: 8px 14px !important;
                 font-weight: 700 !important;
@@ -540,18 +544,15 @@
                 gap: 6px !important;
             }
 
-            .no-ru-btn:hover, .no-ru-btn-secondary:hover {
-                background: #2e333e !important;
+            .no-ru-btn:hover, .no-ru-btn-secondary:hover, .no-ru-btn-price:hover {
+                background: linear-gradient(180deg, #2d323d 0%, #1d212a 100%) !important;
                 border-color: #535d6f !important;
                 color: #ffffff !important;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
             }
 
             .no-ru-btn-price:hover {
-                background: rgba(71, 201, 117, 0.25) !important;
-                border-color: #47c975 !important;
-                color: #ffffff !important;
-                box-shadow: 0 4px 12px rgba(71, 201, 117, 0.2) !important;
+                color: #5cf58e !important;
             }
 
             .no-ru-btn:active, .no-ru-btn-price:active, .no-ru-btn-secondary:active {
@@ -722,18 +723,19 @@
                 gap: 8px !important;
                 width: 100% !important;
                 padding: 10px 16px !important;
-                border-radius: 8px !important;
                 font-size: 13px !important;
                 font-weight: 700 !important;
                 text-transform: uppercase !important;
                 letter-spacing: 0.8px !important;
+                border-radius: 8px !important;
+                cursor: pointer !important;
+                transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
                 text-decoration: none !important;
                 box-sizing: border-box !important;
-                transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
                 margin-top: auto !important;
             }
             .ss-protondb-badge-full:active {
-                transform: scale(0.98) !important;
+                transform: scale(0.96) !important;
             }
 
             .ss-protondb-badge-full.platinum {
@@ -817,49 +819,248 @@
             /* === Body Wrapper: Sidebar + Content === */
             .no-ru-body-wrapper { display: flex; flex: 1; min-height: 0; overflow: hidden; }
 
-            /* === Sidebar === */
+            /* === Sidebar Redesign === */
             .no-ru-sidebar {
-                width: 240px; flex-shrink: 0;
-                background: #171a21; border-right: 1px solid #2d3138;
+                width: 300px; flex-shrink: 0;
+                background: radial-gradient(circle at 50% 30%, rgba(45, 55, 72, 0.45) 0%, rgba(13, 15, 20, 0) 70%),
+                            linear-gradient(180deg, #1d212a 0%, #0d0f13 100%);
+                border-right: 1px solid #1f242e;
                 display: flex; flex-direction: column; overflow-y: auto;
-                scrollbar-width: thin; scrollbar-color: #2a2d34 #171a21;
+                scrollbar-width: thin; scrollbar-color: #2b3345 #0d0f13;
+                padding: 16px 6px;
+                position: relative;
             }
             .no-ru-sidebar-header {
-                padding: 24px 16px 12px; color: #acb2b8; font-size: 12px; font-weight: 700;
-                text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #2d3138;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 14px 20px;
+                color: #ffffff;
+                font-family: inherit;
+                font-size: 16px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                text-shadow: 0 0 12px rgba(102, 192, 244, 0.35);
             }
             .no-ru-filter-item {
-                display: flex; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer;
-                transition: background 0.15s; user-select: none; margin: 2px 8px; border-radius: 6px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 10px 10px;
+                cursor: pointer;
+                transition: all 0.2s ease-in-out;
+                user-select: none;
+                margin: 4px 4px;
+                border-radius: 12px;
+                box-sizing: border-box;
             }
-            .no-ru-filter-item:hover { background: rgba(255,255,255,0.04); }
-            .no-ru-filter-item.disabled { opacity: 0.45; }
-            .no-ru-filter-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-            .no-ru-filter-dot.found { background: #47c975; }
-            .no-ru-filter-dot.no-translations { background: #f39c12; }
-            .no-ru-filter-dot.not-found { background: #7f8c8d; }
-            .no-ru-filter-dot.error { background: #ec7063; }
-            .no-ru-filter-dot.checking { background: #5dade2; }
-            .no-ru-filter-dot.off { background: transparent !important; border: 1.5px solid #acb2b8; }
-            .no-ru-filter-label { flex: 1; color: #dfe3e6; font-size: 13px; line-height: 1.3; }
-            .no-ru-filter-count { color: #8598a6; font-size: 11px; font-weight: 700; min-width: 24px; text-align: right; }
-            
-            /* Unified Steam Switch */
-            .no-ru-filter-toggle {
-                width: 34px; height: 18px; border-radius: 9px; background: #2a2d34;
-                position: relative; transition: background 0.2s ease; flex-shrink: 0;
+            .no-ru-filter-item:hover {
+                background: rgba(255, 255, 255, 0.03);
             }
-            .no-ru-filter-toggle.on { background: #4b69ff; } /* Steam Deck blue toggle */
-            .no-ru-filter-toggle::after {
-                content: ''; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
-                border-radius: 50%; background: #ffffff; transition: transform 0.2s ease;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            .no-ru-filter-item.disabled {
+                opacity: 0.55;
             }
-            .no-ru-filter-toggle.on::after { transform: translateX(16px); }
 
-            .no-ru-sidebar-divider { height: 1px; background: #2d3138; margin: 16px 16px; }
-            .no-ru-sidebar-stats { padding: 12px 24px; color: #acb2b8; font-size: 12px; line-height: 1.8; }
-            .no-ru-sidebar-stats span { color: #ffffff; font-weight: bold; }
+            /* --- Left Status Icons --- */
+            .no-ru-icon-container {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+                position: relative;
+                transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            }
+            .no-ru-icon-container svg {
+                width: 12px;
+                height: 12px;
+                color: inherit !important;
+            }
+
+            /* --- Color Theme Variations for Icons & Badges --- */
+            .no-ru-icon-container.found {
+                background: rgba(46, 204, 113, 0.15) !important;
+                border: 1px solid rgba(46, 204, 113, 0.35) !important;
+                color: #2ecc71 !important;
+            }
+            .no-ru-icon-container.no_translations {
+                background: rgba(243, 156, 18, 0.15) !important;
+                border: 1px solid rgba(243, 156, 18, 0.35) !important;
+                color: #f39c12 !important;
+            }
+            .no-ru-icon-container.not_found {
+                background: rgba(149, 165, 166, 0.15) !important;
+                border: 1px solid rgba(149, 165, 166, 0.3) !important;
+                color: #bdc3c7 !important;
+            }
+            .no-ru-icon-container.error {
+                background: rgba(231, 76, 60, 0.15) !important;
+                border: 1px solid rgba(231, 76, 60, 0.35) !important;
+                color: #e74c3c !important;
+            }
+            .no-ru-icon-container.checking {
+                background: rgba(52, 152, 219, 0.15) !important;
+                border: 1px solid rgba(52, 152, 219, 0.35) !important;
+                color: #3498db !important;
+            }
+
+            /* --- Labels --- */
+            .no-ru-filter-label {
+                flex: 1;
+                color: #dfe3e6;
+                font-size: 13px;
+                font-weight: 500;
+                line-height: 1.3;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                transition: color 0.15s;
+            }
+            .no-ru-filter-item:hover .no-ru-filter-label {
+                color: #ffffff;
+            }
+
+            /* --- Counts --- */
+            .no-ru-filter-count-badge {
+                padding: 2px 6px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 700;
+                min-width: 20px;
+                text-align: center;
+                transition: all 0.25s ease-in-out;
+            }
+            .no-ru-filter-count-badge.found {
+                background: rgba(39, 174, 96, 0.15);
+                border: 1px solid rgba(39, 174, 96, 0.3);
+                color: #2ecc71;
+            }
+            .no-ru-filter-count-badge.no_translations {
+                background: rgba(243, 156, 18, 0.15);
+                border: 1px solid rgba(243, 156, 18, 0.3);
+                color: #f39c12;
+            }
+            .no-ru-filter-count-badge.not_found {
+                background: rgba(127, 140, 141, 0.15);
+                border: 1px solid rgba(127, 140, 141, 0.3);
+                color: #bdc3c7;
+            }
+            .no-ru-filter-count-badge.error {
+                background: rgba(231, 76, 60, 0.15);
+                border: 1px solid rgba(231, 76, 60, 0.3);
+                color: #e74c3c;
+            }
+            .no-ru-filter-count-badge.checking {
+                background: rgba(52, 152, 219, 0.15);
+                border: 1px solid rgba(22, 114, 211, 0.3);
+                color: #3498db;
+            }
+
+            /* --- Toggles and Knobs --- */
+            .no-ru-filter-toggle {
+                width: 38px;
+                height: 20px;
+                border-radius: 10px;
+                position: relative;
+                transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+                flex-shrink: 0;
+                cursor: pointer;
+                box-shadow: inset 0 2px 5px rgba(0,0,0,0.5), 0 1px 1px rgba(255,255,255,0.05);
+                border: 1px solid rgba(0,0,0,0.3);
+            }
+            .no-ru-filter-toggle-knob {
+                position: absolute;
+                top: 1px;
+                left: 1px;
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), background 0.25s;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.5);
+                border: 1px solid rgba(0,0,0,0.3);
+            }
+
+            /* --- Toggle ON Styles (Unified Elite Steam Blue) --- */
+            .no-ru-filter-toggle.on {
+                background: linear-gradient(180deg, #3a82e9 0%, #1e5cb3 100%) !important;
+                border-color: #4b92f5 !important;
+                box-shadow: 0 0 10px rgba(58, 130, 233, 0.35), inset 0 2px 4px rgba(0,0,0,0.4) !important;
+            }
+            .no-ru-filter-toggle.on .no-ru-filter-toggle-knob {
+                transform: translateX(18px) !important;
+                background: radial-gradient(circle at 35% 35%, #ffffff 0%, #b3cfff 45%, #7ea8f7 100%) !important;
+            }
+
+            /* --- Toggle shared OFF state --- */
+            .no-ru-filter-toggle:not(.on) {
+                background: linear-gradient(180deg, #181b22 0%, #282d38 100%) !important;
+                border-color: #3f4554 !important;
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.5) !important;
+            }
+            .no-ru-filter-toggle:not(.on) .no-ru-filter-toggle-knob {
+                transform: translateX(0) !important;
+                background: radial-gradient(circle at 35% 35%, #9aa0b0 0%, #5d6373 50%, #444a57 100%) !important;
+            }
+            .no-ru-filter-item.disabled .no-ru-filter-count-badge {
+                background: rgba(255, 255, 255, 0.05) !important;
+                border-color: rgba(255, 255, 255, 0.08) !important;
+                color: #acb2b8 !important;
+                box-shadow: none !important;
+            }
+            .no-ru-icon-container.off {
+                background: #252830 !important;
+                box-shadow: none !important;
+                color: #7f8c8d !important;
+            }
+
+            /* --- Sidebar Divider --- */
+            .no-ru-sidebar-divider {
+                height: 1px;
+                background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.06) 20%, rgba(255,255,255,0.06) 80%, rgba(255,255,255,0) 100%);
+                margin: 20px 16px;
+                border: 0;
+            }
+
+            /* --- Sidebar Stats Box Card --- */
+            .no-ru-sidebar-stats-card {
+                background: rgba(20, 24, 32, 0.45);
+                backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                border-radius: 12px;
+                padding: 16px;
+                margin: 4px 12px 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.02), 0 4px 12px rgba(0, 0, 0, 0.3);
+                box-sizing: border-box;
+            }
+            .no-ru-stats-row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                color: #9aa4b0;
+                font-size: 13px;
+                font-weight: 500;
+                line-height: 1;
+            }
+            .no-ru-stats-value {
+                color: #ffffff !important;
+                font-weight: 700;
+            }
+            .no-ru-stats-icon {
+                color: #6a7685;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: color 0.2s;
+            }
+            .no-ru-stats-row:hover .no-ru-stats-icon {
+                color: #a4b3c6;
+            }
 
             .no-ru-hidden-card { display: none !important; }
             .no-ru-card-loc-link { font-size: 12px; color: #66c0f4; text-decoration: none; margin-top: 4px; display: inline-block; transition: color 0.15s; }
@@ -997,15 +1198,15 @@
 
         const sidebarHeader = document.createElement('div');
         sidebarHeader.className = 'no-ru-sidebar-header';
-        sidebarHeader.textContent = 'Фильтры';
+        sidebarHeader.innerHTML = `${ICON.filter} <span>Фильтры</span>`;
         sidebar.appendChild(sidebarHeader);
 
         const filterConfigs = [
-            { key: 'found', label: 'Русификатор есть', dotClass: 'found' },
-            { key: 'no_translations', label: 'Нет русификатора', dotClass: 'no-translations' },
-            { key: 'not_found', label: 'Не найдено на ZOG', dotClass: 'not-found' },
-            { key: 'error', label: 'Ошибка загрузки', dotClass: 'error' },
-            { key: 'checking', label: 'Проверка...', dotClass: 'checking' }
+            { key: 'found', label: 'Русификатор есть', icon: ICON.check, class: 'found' },
+            { key: 'no_translations', label: 'Нет русификатора', icon: ICON.error, class: 'no_translations' },
+            { key: 'not_found', label: 'Не найдено на ZOG', icon: ICON.question, class: 'not_found' },
+            { key: 'error', label: 'Ошибка загрузки', icon: ICON.warn, class: 'error' },
+            { key: 'checking', label: 'Проверка...', icon: ICON.clock, class: 'checking' }
         ];
 
         filterConfigs.forEach(cfg => {
@@ -1013,24 +1214,26 @@
             item.className = 'no-ru-filter-item' + (filters[cfg.key] ? '' : ' disabled');
             item.dataset.filterKey = cfg.key;
 
-            const dot = document.createElement('div');
-            dot.className = 'no-ru-filter-dot ' + cfg.dotClass + (filters[cfg.key] ? '' : ' off');
-            dot.dataset.filterKey = cfg.key;
+            const iconContainer = document.createElement('div');
+            iconContainer.className = 'no-ru-icon-container no-ru-filter-dot ' + cfg.class + (filters[cfg.key] ? '' : ' off');
+            iconContainer.dataset.filterKey = cfg.key;
+            iconContainer.innerHTML = cfg.icon;
 
             const label = document.createElement('div');
             label.className = 'no-ru-filter-label';
             label.textContent = cfg.label;
 
             const count = document.createElement('div');
-            count.className = 'no-ru-filter-count';
+            count.className = 'no-ru-filter-count-badge no-ru-filter-count ' + cfg.class;
             count.id = 'filter-count-' + cfg.key;
             count.textContent = '0';
 
             const toggle = document.createElement('div');
-            toggle.className = 'no-ru-filter-toggle' + (filters[cfg.key] ? ' on' : '');
+            toggle.className = 'no-ru-filter-toggle ' + cfg.class + (filters[cfg.key] ? ' on' : '');
             toggle.dataset.filterKey = cfg.key;
+            toggle.innerHTML = '<div class="no-ru-filter-toggle-knob"></div>';
 
-            item.appendChild(dot);
+            item.appendChild(iconContainer);
             item.appendChild(label);
             item.appendChild(count);
             item.appendChild(toggle);
@@ -1038,7 +1241,7 @@
             item.onclick = () => {
                 filters[cfg.key] = !filters[cfg.key];
                 toggle.classList.toggle('on', filters[cfg.key]);
-                dot.classList.toggle('off', !filters[cfg.key]);
+                iconContainer.classList.toggle('off', !filters[cfg.key]);
                 item.classList.toggle('disabled', !filters[cfg.key]);
                 saveFilters();
                 applyFilters();
@@ -1052,11 +1255,24 @@
         divider.className = 'no-ru-sidebar-divider';
         sidebar.appendChild(divider);
 
-        const stats = document.createElement('div');
-        stats.className = 'no-ru-sidebar-stats';
-        stats.id = 'no-ru-sidebar-stats';
-        stats.innerHTML = 'Всего: <span id="stat-total">0</span><br>Показано: <span id="stat-visible">0</span><br>Скрыто: <span id="stat-hidden">0</span>';
-        sidebar.appendChild(stats);
+        const statsCard = document.createElement('div');
+        statsCard.className = 'no-ru-sidebar-stats-card';
+        statsCard.id = 'no-ru-sidebar-stats';
+        statsCard.innerHTML = `
+            <div class="no-ru-stats-row">
+                <span>Всего: <span id="stat-total" class="no-ru-stats-value">0</span></span>
+                <span class="no-ru-stats-icon">${ICON.layers}</span>
+            </div>
+            <div class="no-ru-stats-row">
+                <span>Показано: <span id="stat-visible" class="no-ru-stats-value">0</span></span>
+                <span class="no-ru-stats-icon">${ICON.eye}</span>
+            </div>
+            <div class="no-ru-stats-row">
+                <span>Скрыто: <span id="stat-hidden" class="no-ru-stats-value">0</span></span>
+                <span class="no-ru-stats-icon">${ICON.eyeSlash}</span>
+            </div>
+        `;
+        sidebar.appendChild(statsCard);
 
         // ===== Content area =====
         const content = document.createElement('div');
