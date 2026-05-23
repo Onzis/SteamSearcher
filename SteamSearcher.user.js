@@ -497,7 +497,8 @@
                 grid-auto-rows: max-content !important;
                 gap: 24px !important;
                 align-content: start !important;
-                background: #0d0f13 !important;
+                background: radial-gradient(circle at 50% 30%, rgba(45, 55, 72, 0.45) 0%, rgba(13, 15, 20, 0) 70%), linear-gradient(180deg, #1d212a 0%, #0d0f13 100%);
+                overscroll-behavior: contain !important;
                 overscroll-behavior: contain !important;
                 scrollbar-width: thin !important;
                 scrollbar-color: #2f343f #0d0f13 !important;
@@ -613,7 +614,8 @@
             /* === Game Card === */
             .no-ru-game-card {
                 display: flex; flex-direction: column;
-                background: #101114; border: 1px solid rgba(255, 255, 255, 0.08);
+                background: radial-gradient(circle at 50% 30%, rgba(45, 55, 72, 0.45) 0%, rgba(13, 15, 20, 0) 70%), linear-gradient(180deg, #1d212a 0%, #0d0f13 100%);
+                overscroll-behavior: contain !important;
                 border-radius: 20px;
                 transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border-color 0.2s ease, box-shadow 0.2s ease;
                 overflow: hidden; color: #ffffff; position: relative;
