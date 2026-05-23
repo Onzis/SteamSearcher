@@ -4,7 +4,7 @@
 
 Userscript для поиска игр без русского языка на странице поиска Steam с автоматической проверкой наличия фанатских русификаторов на [ZoneOfGames.ru](https://www.zoneofgames.ru).
 
-<img width="1920" height="911" alt="image" src="https://github.com/user-attachments/assets/b918793b-8d09-4a1c-8d86-53a66e17cc85" />
+<img width="1920" height="911" alt="image" src="https://github.com/user-attachments/assets/56d0eee5-08f0-488c-bcdf-74f954fedaa5" />
 
 ## Возможности
 
