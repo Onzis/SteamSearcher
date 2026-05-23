@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.6.5.1
+// @version         3.6.5.2
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -624,7 +624,7 @@
             .no-ru-game-card:hover {
                 transform: translateY(-4px);
                 border-color: #3c495e;
-                box-shadow: 0 16px 40px rgba(0,0,0,0.8);
+                box-shadow: 0 0px 10px #00d7ff;
             }
             .no-ru-game-card:hover .no-ru-card-img img { transform: scale(1.04); }
 
