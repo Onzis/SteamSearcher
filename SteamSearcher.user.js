@@ -4,7 +4,7 @@
 // @namespace       https://github.com/Onzis/
 // @author          Onzis
 // @license         GPL-3.0 license
-// @version         3.6.5.2
+// @version         3.6.5.3
 // @homepageURL     https://github.com/Onzis/SteamSearcher
 // @updateURL       https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
 // @downloadURL     https://github.com/Onzis/SteamSearcher/raw/refs/heads/main/SteamSearcher.user.js
@@ -1072,12 +1072,12 @@
     }
 
     async function checkLanguage(appId, retryCount = 0) {
-        const cacheKey = `lang_ru_v5_${appId}`;
+        const cacheKey = `lang_ru_v6_${appId}`;
         const cached = localStorage.getItem(cacheKey);
         if (cached !== null) return cached === 'true';
 
         try {
-            const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}`);
+            const response = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}&l=english`);
 
             if (response.status === 429) {
                 if (retryCount < 2) {
