@@ -1,0 +1,37 @@
+name: 👾 Проблема
+labels: ["Баг"] 
+description: Сообщить о проблеме
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Опишите вашу проблему
+      description: Чётко опишите проблему с которой вы столкнулись
+      placeholder: Описание проблемы
+    validations:
+      required: true
+
+  - type: textarea
+    id: version
+    attributes:
+      label: Версия SteamSearcher
+      description: Версия SteamSearcher на которой вы словили проблему
+      placeholder: Версия
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Шаги воспроизведения проблемы
+      description: Шаги по воспроизведению поведения (вашей проблемы).
+      placeholder: |
+        Напишите здесь шаги, с помощью которых можно повторить вашу проблему
+        на других компьютерах
+
+
+
+
+
+

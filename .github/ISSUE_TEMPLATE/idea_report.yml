@@ -1,0 +1,20 @@
+name: 🐥 Идея
+labels: ["Добавить"] 
+description: Сообщить о идее
+
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Опишите вашу идею
+      description: Чётко опишите идею которую вы хотите
+      placeholder: Описание идеи
+    validations:
+      required: true
+
+
+
+
+
+
+
